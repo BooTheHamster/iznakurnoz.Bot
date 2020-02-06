@@ -1,2 +1,2 @@
 # iznakurnoz.Bot
-Бот для telegram для домашнего сервера
+Бот для telegram для домашнего сервера на .Net Core.
