@@ -5,9 +5,14 @@ namespace Iznakurnoz.Bot
     /// </summary>
     internal class BotConfig
     {
+        public BotConfig()
+        {
+            AuthToken = null;
+        }
+
         /// <summary>
         /// Токен авторизации бота.
         /// </summary>
-        public string AuthToken;
+        public string AuthToken { get; set; }
     }
 }
