@@ -11,13 +11,14 @@ namespace Iznakurnoz.Bot
 {
     internal class BotService : IHostedService, IDisposable
     {
+        private const int StartWaitDelayInMilliseconds = 10000;
         private readonly ILogger _logger;
         private readonly IOptions<BotConfig> _config;
         private static TelegramBotClient _client;
 
         public BotService(
             ILogger<BotService> logger,
-            IOptions<BotConfig> config)
+            IOptionsSnapshot<BotConfig> config)
         {
             _logger = logger;
             _config = config;
@@ -26,13 +27,38 @@ namespace Iznakurnoz.Bot
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting bot.");
+            return GetStartTask();
 
-            _client = new TelegramBotClient(_config.Value.AuthToken);
+        }
+
+        private Task TryStartBot() 
+        {
+            if (string.IsNullOrWhiteSpace(_config.Value.AuthToken))
+            {
+                _logger.LogInformation("AuthToken not defined. Wait configuration ...");
+                return GetStartTask();
+            }
+
+            try
+            {
+                _client = new TelegramBotClient(_config.Value.AuthToken);
+            }
+            catch (Exception error)
+            {
+                _logger.LogError(null, error, "TelegramBotClient create error");
+                return Task.Factory.StartNew(TryStartBot);
+            }
+
             _client.OnMessage += BotOnMessageReceived;
             _client.OnMessageEdited += BotOnMessageReceived;
             _client.StartReceiving();
 
             return Task.CompletedTask;
+        }
+
+        private Task GetStartTask()
+        {
+            return Task.Delay(StartWaitDelayInMilliseconds).ContinueWith(task => TryStartBot());
         }
 
         private void BotOnMessageReceived(object sender, MessageEventArgs e)

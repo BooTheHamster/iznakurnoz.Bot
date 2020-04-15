@@ -28,11 +28,15 @@ namespace Iznakurnoz.Bot
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("logging"));
-                    logging.AddConsole();
+                    ConfigureLogging(logging);
                 });
 
             await builder.RunConsoleAsync();
+        }
+
+        private static void ConfigureLogging(ILoggingBuilder logging)
+        {
+            logging.AddConsole();
         }
 
         private static string GetAppSettingsFilePath()
@@ -61,7 +65,7 @@ namespace Iznakurnoz.Bot
             }
 
             builder
-                .AddJsonFile(configFilePath, optional : false, reloadOnChange : true)
+                .AddJsonFile(configFilePath, optional: false, reloadOnChange: true)
                 .Build();
 
             builder.AddEnvironmentVariables();
