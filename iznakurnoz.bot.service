@@ -1,0 +1,17 @@
+[Unit]
+Description=Inzakurnoz telegram bot 
+After=remote-fs.target systemd-user-sessions.service network-online.target nss-lookup.target sound.target bluetooth.target polkit.service upower.service mysqld.service
+Wants=network-online.target polkit.service upower.service
+
+[Service]
+User=boo
+Group=boo
+WorkingDirectory=/usr/local/bin
+ExecStart=/usr/local/bin/iznakurnoz.Bot
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=iznakurnoz.Bot
+
+[Install]
+WantedBy=multi-user.target
