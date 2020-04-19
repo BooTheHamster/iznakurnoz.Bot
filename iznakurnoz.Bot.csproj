@@ -24,6 +24,7 @@
     <PackageReference Include="System.Text.Json" Version="4.7.1"/>
     <PackageReference Include="Telegram.Bot" Version="15.3.0"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.2"/>
+    <PackageReference Include="HttpToSocks5Proxy" Version="1.4.0"/>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources/iznakurnozbot.conf"/>
