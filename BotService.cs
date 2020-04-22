@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Iznakurnoz.Bot.Configuration;
+using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,17 +17,40 @@ namespace Iznakurnoz.Bot
 {
     internal class BotService : IHostedService, IDisposable
     {
+        private const string CommandPrefix = "/";
         private const int StartWaitDelayInMilliseconds = 10000;
         private readonly ILogger _logger;
         private BotConfig _config;
         private TelegramBotClient _client;
+        private IDictionary<string, IBotCommandHandler> _botCommands = new Dictionary<string, IBotCommandHandler>();
 
         public BotService(
             ILogger<BotService> logger,
-            IOptionsMonitor<BotConfig> config)
+            IOptionsMonitor<BotConfig> config,
+            IEnumerable<IBotCommandHandler> botCommands)
         {
             _logger = logger;
             _config = config.CurrentValue;
+            
+            foreach (var botCommand in botCommands)
+            {
+                foreach (var command in botCommand.SupportedCommands)
+                {                    
+                    if (string.IsNullOrWhiteSpace(command))
+                    {
+                        continue;
+                    }
+
+                    var commandText = command;
+                    if (!IsCommand(commandText))
+                    {
+                        commandText = CommandPrefix + commandText;
+                    }
+
+                    _botCommands.Add(commandText.ToLower(), botCommand);
+                }
+            }
+
             config.OnChange(OnOptionChanged);
         }
 
@@ -150,7 +176,50 @@ namespace Iznakurnoz.Bot
         private void BotOnMessageReceived(object sender, MessageEventArgs messageEvent)
         {
             _logger.LogInformation($"{messageEvent.Message.Text}");
-            _client.SendTextMessageAsync(messageEvent.Message.Chat, "<code>hi! C#</code>", ParseMode.Html);
+
+            if (ParseCommand(messageEvent.Message.Text, out var command, out var arguments)
+                && _botCommands.TryGetValue(command, out var handler))
+            {
+                var result = handler.HandleCommand(command, arguments);
+                _client.SendTextMessageAsync(messageEvent.Message.Chat, result, ParseMode.Html);
+            }
+        }
+
+        private bool ParseCommand(string message, out string command, out IEnumerable<string> arguments)
+        {
+            command = null;
+            arguments = null;
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return false;
+            }
+
+            var messageWords = message.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            if (messageWords.Count == 0)
+            {
+                return false;
+            }
+
+            // Команды делаем не чувствительными к регистру.
+            command = messageWords.First().ToLower();
+
+            if (!IsCommand(command))
+            {
+                command = null;
+                return false;
+            }
+
+            messageWords.RemoveAt(0);
+            arguments = messageWords;
+
+            return true;
+        }
+
+        private bool IsCommand(string text)
+        {
+            return text.StartsWith(CommandPrefix);
         }
 
         private void OnOptionChanged(BotConfig config, string name)

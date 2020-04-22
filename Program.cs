@@ -2,6 +2,9 @@
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using iznakurnoz.Bot.Commands;
+using Iznakurnoz.Bot.Configuration;
+using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Iznakurnoz.Bot
 {
+
     class Program
     {
         private const string appSettingsFilename = "iznakurnozbot.conf";
@@ -25,6 +29,9 @@ namespace Iznakurnoz.Bot
                     services.AddOptions();
                     services.Configure<BotConfig>(hostContext.Configuration.GetSection("config"));
                     services.AddSingleton<IHostedService, BotService>();
+
+                    services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, HiCommandHandler2>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {

@@ -1,5 +1,8 @@
-namespace Iznakurnoz.Bot
+namespace Iznakurnoz.Bot.Configuration
 {
+    /// <summary>
+    /// Настройки прокси для подключения бота.
+    /// </summary>
     internal class ProxySettings
     {
         /// <summary>
@@ -21,26 +24,5 @@ namespace Iznakurnoz.Bot
         /// Пароль пользователя прокси.
         /// </summary>
         public string Password { get; set; }
-    }
-
-    /// <summary>
-    /// Настройки бота.
-    /// </summary>
-    internal class BotConfig
-    {
-        public BotConfig()
-        {
-            AuthToken = null;
-        }
-
-        /// <summary>
-        /// Токен авторизации бота.
-        /// </summary>
-        public string AuthToken { get; set; }
-
-        /// <summary>
-        /// Настройки прокси.
-        /// </summary>
-        public ProxySettings ProxySettings { get; set; }
     }
 }
