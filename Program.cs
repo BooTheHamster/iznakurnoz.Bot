@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using iznakurnoz.Bot.Commands;
+using iznakurnoz.Bot.Interfaces;
+using iznakurnoz.Bot.Services;
 using Iznakurnoz.Bot.Configuration;
 using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +17,7 @@ namespace Iznakurnoz.Bot
 
     class Program
     {
-        private const string appSettingsFilename = "iznakurnozbot.conf";
+        private const string AppSettingsFilename = "iznakurnozbot.conf";
 
         public static async Task Main(string[] args)
         {
@@ -31,7 +33,7 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<IHostedService, BotService>();
 
                     services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, HiCommandHandler2>();
+                    services.AddSingleton<IDataStorage, DataStorage>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
@@ -46,15 +48,16 @@ namespace Iznakurnoz.Bot
             logging.AddConsole();
         }
 
-        private static string GetAppSettingsFilePath()
-        {
-            var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            return Path.Combine(appDataFolder, appSettingsFilename);
-        }
-
         private static void ConfigureHost(IConfigurationBuilder builder, string[] args)
         {
-            var configFilePath = GetAppSettingsFilePath();
+            var configDirectoryPath = FilePathProvider.GetDirectoryPath();
+
+            if (!Directory.Exists(configDirectoryPath))
+            {
+                Directory.CreateDirectory(configDirectoryPath);
+            }
+
+            var configFilePath = Path.Combine(configDirectoryPath, AppSettingsFilename);
 
             if (!File.Exists(configFilePath))
             {
