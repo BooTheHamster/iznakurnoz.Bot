@@ -180,8 +180,15 @@ namespace Iznakurnoz.Bot
             if (ParseCommand(messageEvent.Message.Text, out var command, out var arguments)
                 && _botCommands.TryGetValue(command, out var handler))
             {
-                var result = handler.HandleCommand(command, arguments);
-                _client.SendTextMessageAsync(messageEvent.Message.Chat, result, ParseMode.Html);
+                try
+                {
+                    var result = handler.HandleCommand(command, arguments);
+                    _client.SendTextMessageAsync(messageEvent.Message.Chat, result, ParseMode.Html);
+                }
+                catch (Exception error)
+                {
+                    _logger.LogError(error, $"Command {messageEvent.Message.Text} execution error");
+                }
             }
         }
 

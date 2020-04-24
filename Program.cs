@@ -33,6 +33,7 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<IHostedService, BotService>();
 
                     services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
                     services.AddSingleton<IDataStorage, DataStorage>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
