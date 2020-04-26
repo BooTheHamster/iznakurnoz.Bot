@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using iznakurnoz.Bot.Commands;
+using iznakurnoz.Bot.CommandHandlers;
+using iznakurnoz.Bot.DocumentHandlers;
 using iznakurnoz.Bot.Interfaces;
 using iznakurnoz.Bot.Services;
 using Iznakurnoz.Bot.Configuration;
@@ -30,11 +30,16 @@ namespace Iznakurnoz.Bot
                 {
                     services.AddOptions();
                     services.Configure<BotConfig>(hostContext.Configuration.GetSection("config"));
-                    services.AddSingleton<IHostedService, BotService>();
 
+                    services.AddSingleton<IHostedService, BotService>();
                     services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
+                    services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
                     services.AddSingleton<IDataStorage, DataStorage>();
+                    
+                    services.AddSingleton<BotTelegramClient, BotTelegramClient>();
+                    services.AddSingleton<IBotTelegramClient>(s => s.GetRequiredService<BotTelegramClient>());
+                    services.AddSingleton<IBotTelegramClientControl>(s => s.GetRequiredService<BotTelegramClient>());
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {

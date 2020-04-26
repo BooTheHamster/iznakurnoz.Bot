@@ -16,6 +16,11 @@ namespace Iznakurnoz.Bot.Configuration
         public string AuthToken { get; set; }
 
         /// <summary>
+        /// Настройки торрент-сервера.
+        /// </summary>
+        public TorrentServerSettings TorrentServerSettings { get; set; }
+
+        /// <summary>
         /// Настройки прокси.
         /// </summary>
         public ProxySettings ProxySettings { get; set; }

@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Iznakurnoz.Bot.Interfaces;
 
-namespace iznakurnoz.Bot.Commands
+namespace iznakurnoz.Bot.CommandHandlers
 {
     /// <summary>
     /// Обработчик команды "/kodi".
     /// 
     /// Обработчик требует запуска бота от имени администратора.
     /// </summary>
-    public class KodiCommandHandler : IBotCommandHandler
+    internal class KodiCommandHandler : IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
         {

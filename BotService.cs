@@ -8,10 +8,8 @@ using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MihaZupan;
-using Telegram.Bot;
 using Telegram.Bot.Args;
-using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types;
 
 namespace Iznakurnoz.Bot
 {
@@ -20,22 +18,30 @@ namespace Iznakurnoz.Bot
         private const string CommandPrefix = "/";
         private const int StartWaitDelayInMilliseconds = 10000;
         private readonly ILogger _logger;
+        private IBotTelegramClientControl _botClientControl;
+        private readonly IBotTelegramClient _botClient;
         private BotConfig _config;
-        private TelegramBotClient _client;
-        private IDictionary<string, IBotCommandHandler> _botCommands = new Dictionary<string, IBotCommandHandler>();
+        private IDictionary<string, IBotCommandHandler> _botCommandHandlers = new Dictionary<string, IBotCommandHandler>();
+        private readonly IEnumerable<IBotDocumentHandler> _botDocumentHandlers;
 
         public BotService(
             ILogger<BotService> logger,
-            IOptionsMonitor<BotConfig> config,
-            IEnumerable<IBotCommandHandler> botCommands)
+            IOptionsMonitor<BotConfig> configMonitor,
+            IEnumerable<IBotCommandHandler> botCommandHandlers,
+            IEnumerable<IBotDocumentHandler> botDocumentHandlers,
+            IBotTelegramClientControl botClientControl,
+            IBotTelegramClient botClient)
         {
             _logger = logger;
-            _config = config.CurrentValue;
-            
-            foreach (var botCommand in botCommands)
+            _botClientControl = botClientControl;
+            _botClient = botClient;
+            _config = configMonitor.CurrentValue;
+            _botDocumentHandlers = botDocumentHandlers.ToArray();
+
+            foreach (var botCommand in botCommandHandlers)
             {
                 foreach (var command in botCommand.SupportedCommands)
-                {                    
+                {
                     if (string.IsNullOrWhiteSpace(command))
                     {
                         continue;
@@ -47,11 +53,12 @@ namespace Iznakurnoz.Bot
                         commandText = CommandPrefix + commandText;
                     }
 
-                    _botCommands.Add(commandText.ToLower(), botCommand);
+                    _botCommandHandlers.Add(commandText.ToLower(), botCommand);
                 }
             }
 
-            config.OnChange(OnOptionChanged);
+            configMonitor.OnChange(OnOptionChanged);
+            _botClientControl.OnMessageReceived += BotOnMessageReceived;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -64,13 +71,13 @@ namespace Iznakurnoz.Bot
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping bot.");
-            _client.StopReceiving();
+            _botClientControl.Stop();
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
-            _client = null;
+            _botClientControl = null;
             _logger.LogInformation("Disposing ...");
         }
 
@@ -118,6 +125,18 @@ namespace Iznakurnoz.Bot
                 }
             }
 
+            if (config.TorrentServerSettings == null)
+            {
+                validationErrors.Add($"{nameof(BotConfig.TorrentServerSettings)} is null");
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(config.TorrentServerSettings.WatchDirectoryPath))
+                {
+                    validationErrors.Add($"{nameof(BotConfig.TorrentServerSettings.WatchDirectoryPath)} is empty");
+                }
+            }
+
             if (validationErrors.Count > 0)
             {
                 validationErrors.Add("Awaiting configuration ...");
@@ -146,24 +165,11 @@ namespace Iznakurnoz.Bot
                 return GetStartTask();
             }
 
-            try
+            _botClientControl.SetConfig(_config);
+            if (!_botClientControl.Start())
             {
-                var proxy = new HttpToSocks5Proxy(
-                    _config.ProxySettings.Address,
-                    _config.ProxySettings.Port,
-                    _config.ProxySettings.Username,
-                    _config.ProxySettings.Password);
-                _client = new TelegramBotClient(_config.AuthToken, proxy);
-            }
-            catch (Exception error)
-            {
-                _logger.LogError($"TelegramBotClient create error: {error.Message}");
                 return GetStartTask();
             }
-
-            _client.OnMessage += BotOnMessageReceived;
-            _client.OnMessageEdited += BotOnMessageReceived;
-            _client.StartReceiving();
 
             return Task.CompletedTask;
         }
@@ -175,19 +181,43 @@ namespace Iznakurnoz.Bot
 
         private void BotOnMessageReceived(object sender, MessageEventArgs messageEvent)
         {
-            _logger.LogInformation($"{messageEvent.Message.Text}");
+            if (messageEvent.Message.Document != null)
+            {
+                HandleDocument(messageEvent.Message);
+                return;
+            }
 
-            if (ParseCommand(messageEvent.Message.Text, out var command, out var arguments)
-                && _botCommands.TryGetValue(command, out var handler))
+            HandleCommand(messageEvent.Message);
+        }
+
+        private void HandleDocument(Message message)
+        {
+            _logger.LogInformation($"{message.Document.FileName}");
+
+            foreach (var documentHandler in _botDocumentHandlers)
+            {
+                if (documentHandler.HandleDocument(message))
+                {
+                    return;
+                }
+            }
+        }
+
+        private void HandleCommand(Message message)
+        {
+            _logger.LogInformation($"{message.Text}");
+
+            if (ParseCommand(message.Text, out var command, out var arguments)
+                && _botCommandHandlers.TryGetValue(command, out var handler))
             {
                 try
                 {
                     var result = handler.HandleCommand(command, arguments);
-                    _client.SendTextMessageAsync(messageEvent.Message.Chat, result, ParseMode.Html);
+                    _botClient.SendTextMessage(message.Chat, result);
                 }
                 catch (Exception error)
                 {
-                    _logger.LogError(error, $"Command {messageEvent.Message.Text} execution error");
+                    _logger.LogError(error, $"Command {message.Text} execution error");
                 }
             }
         }

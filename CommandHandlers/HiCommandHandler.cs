@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using Iznakurnoz.Bot.Interfaces;
 
-namespace iznakurnoz.Bot.Commands
+namespace iznakurnoz.Bot.CommandHandlers
 {
     /// <summary>
     /// Обработчик команды "hi".
     /// </summary>
-    public class HiCommandHandler : IBotCommandHandler
+    internal class HiCommandHandler : IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
         {
