@@ -4,8 +4,8 @@ After=remote-fs.target systemd-user-sessions.service network-online.target nss-l
 Wants=network-online.target polkit.service upower.service
 
 [Service]
-User=boo
-Group=boo
+User=root
+Group=root
 WorkingDirectory=/usr/local/bin
 ExecStart=/usr/local/bin/iznakurnoz.Bot
 Restart=always
