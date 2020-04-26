@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Iznakurnoz.Bot.Interfaces;
+using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
 {
@@ -9,16 +10,21 @@ namespace iznakurnoz.Bot.CommandHandlers
     /// 
     /// Обработчик требует запуска бота от имени администратора.
     /// </summary>
-    internal class KodiCommandHandler : IBotCommandHandler
+    internal class KodiCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
         {
             "kodi"
         };
 
+        public KodiCommandHandler(IBotTelegramClient botTelegramClient) 
+            : base(botTelegramClient)
+        {
+        }
+
         public IEnumerable<string> SupportedCommands => _supportedCommands;
 
-        public string HandleCommand(string command, IEnumerable<string> arguments)
+        public void HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
             var localAll = Process.GetProcesses();
 
@@ -26,13 +32,14 @@ namespace iznakurnoz.Bot.CommandHandlers
             {
                 if (process.ProcessName.Contains("kodi-standalone"))
                 {
+                    // "Убивается" процесс Kodi чтобы он перезапустился заново.
                     process.Kill();
+                    BotClient.SendTextMessage(message.Chat, "Kodi перезапущен.");
                     break;
                 }
             }
 
-            return "Kodi restarted ...";
+            BotClient.SendTextMessage(message.Chat, "Не найдено запущенного экземпляра Kodi.");
         }
     }
-
 }

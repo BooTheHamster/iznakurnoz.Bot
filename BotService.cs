@@ -196,9 +196,16 @@ namespace Iznakurnoz.Bot
 
             foreach (var documentHandler in _botDocumentHandlers)
             {
-                if (documentHandler.HandleDocument(message))
+                try
                 {
-                    return;
+                    if (documentHandler.HandleDocument(message))
+                    {
+                        return;
+                    }
+                }
+                catch (Exception error)
+                {
+                    _logger.LogError(error, $"Document handler ${documentHandler.GetType().Name} error");
                 }
             }
         }
@@ -212,8 +219,7 @@ namespace Iznakurnoz.Bot
             {
                 try
                 {
-                    var result = handler.HandleCommand(command, arguments);
-                    _botClient.SendTextMessage(message.Chat, result);
+                    handler.HandleCommand(message, command, arguments);
                 }
                 catch (Exception error)
                 {

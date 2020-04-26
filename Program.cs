@@ -56,7 +56,7 @@ namespace Iznakurnoz.Bot
 
         private static void ConfigureHost(IConfigurationBuilder builder, string[] args)
         {
-            var configDirectoryPath = FilePathProvider.GetDirectoryPath();
+            var configDirectoryPath = FilePathProvider.GetConfigDirectoryPath();
 
             if (!Directory.Exists(configDirectoryPath))
             {
