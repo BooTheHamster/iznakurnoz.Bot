@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using iznakurnoz.Bot.Services;
 using Iznakurnoz.Bot.Configuration;
 using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Hosting;
@@ -81,80 +82,9 @@ namespace Iznakurnoz.Bot
             _logger.LogInformation("Disposing ...");
         }
 
-        private static bool CheckConfig(BotConfig config, ILogger logger)
-        {
-            var validationErrors = new List<string>();
-
-            if (config == null)
-            {
-                validationErrors.Add("No configuration found.");
-            }
-            else
-            {
-
-                if (string.IsNullOrWhiteSpace(config.AuthToken))
-                {
-                    validationErrors.Add("AuthToken not defined.");
-                }
-            }
-
-            if (config.ProxySettings == null)
-            {
-                validationErrors.Add("No proxy settings found.");
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(config.ProxySettings.Address))
-                {
-                    validationErrors.Add("Proxy server address not defined.");
-                }
-
-                if (config.ProxySettings.Port <= 0)
-                {
-                    validationErrors.Add("Proxy port not defined.");
-                }
-
-                if (string.IsNullOrWhiteSpace(config.ProxySettings.Username))
-                {
-                    validationErrors.Add("Proxy username not defined.");
-                }
-
-                if (string.IsNullOrWhiteSpace(config.ProxySettings.Password))
-                {
-                    validationErrors.Add("Proxy password not defined.");
-                }
-            }
-
-            if (config.TorrentServerSettings == null)
-            {
-                validationErrors.Add($"{nameof(BotConfig.TorrentServerSettings)} is null");
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(config.TorrentServerSettings.WatchDirectoryPath))
-                {
-                    validationErrors.Add($"{nameof(BotConfig.TorrentServerSettings.WatchDirectoryPath)} is empty");
-                }
-            }
-
-            if (validationErrors.Count > 0)
-            {
-                validationErrors.Add("Awaiting configuration ...");
-
-                foreach (var line in validationErrors)
-                {
-                    logger.LogInformation(line);
-                }
-
-                return false;
-            }
-
-            return true;
-        }
-
         private Task TryStartBot()
         {
-            if (!CheckConfig(_config, _logger))
+            if (!ConfigurationChecker.CheckConfig(_config, _logger))
             {
                 return GetStartTask();
             }

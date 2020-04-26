@@ -7,7 +7,7 @@ namespace iznakurnoz.Bot.Services
     /// <summary>
     /// Поставщик информации о пути к файлам бота.
     /// </summary>
-    public class FilePathProvider
+    internal class FilePathProvider
     {
         private const string DaemonCommandLineFlag = "--daemon";
         private const string BotFolderName = "iznakurnozbot";
