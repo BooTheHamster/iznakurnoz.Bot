@@ -12,12 +12,13 @@ namespace iznakurnoz.Bot.Services
     public class DataStorage : IDataStorage
     {        
         /// <summary>
-        /// Наименование файла в котором хранится информация хранилища.ё
+        /// Наименование файла в котором хранится информация хранилища.
         /// </summary>
         private const string DataStorageFilename = "datastorage.json";
 
         private IDictionary<string, object> _storage = null;
         private IDictionary<string, string> _readedStorage = null;
+        private string _dataFilePath = null;
 
         public T Get<T>(string key)
         {
@@ -78,9 +79,14 @@ namespace iznakurnoz.Bot.Services
             _storage = new Dictionary<string, object>();
         }
 
-        private static string GetFilePath()
+        private string GetFilePath()
         {
-            return FilePathProvider.GetFilePath(DataStorageFilename);
+            if (string.IsNullOrWhiteSpace(_dataFilePath))
+            {
+                _dataFilePath = Path.Combine(FilePathProvider.GetDataDirectoryPath(), DataStorageFilename);
+            }
+
+            return _dataFilePath;
         }
     }
 }
