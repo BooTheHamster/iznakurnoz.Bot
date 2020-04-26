@@ -16,6 +16,11 @@ namespace Iznakurnoz.Bot.Configuration
         public string AuthToken { get; set; }
 
         /// <summary>
+        /// Id администратора от которого можно выполнять команды.
+        /// </summary>
+        public int AdminId { get; set; }
+
+        /// <summary>
         /// Настройки торрент-сервера.
         /// </summary>
         public TorrentServerSettings TorrentServerSettings { get; set; }

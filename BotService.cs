@@ -111,6 +111,11 @@ namespace Iznakurnoz.Bot
 
         private void BotOnMessageReceived(object sender, MessageEventArgs messageEvent)
         {
+            if (messageEvent.Message.From.Id != _config.AdminId)
+            {
+                return;
+            }
+
             if (messageEvent.Message.Document != null)
             {
                 HandleDocument(messageEvent.Message);
