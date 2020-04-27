@@ -1,0 +1,10 @@
+Source: iznakurnozbot
+Maintainer: Oleg Sevostyanov <oleg.sev@gmail.com>
+
+Package: iznakurnozbot
+Architecture: amd64
+Section: misc
+Priority: optional
+Depends: dotnet-runtime-3.1 (>= 3.1.0), libc6 (>=2.12)
+Description:Telegram bot for personal HTPC.
+ Telegram bot for personal HTPC. Writeln in .Net Core and C#.

@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: iznakurnoz-bot
+Source: https://github.com/BooTheHamster/iznakurnoz.Bot
+
+Files: *
+Copyright 2020 Oleg Sevostyanov <oleg.sev@gmail.com>
+License: CC-BY
+This program is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied
+ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.

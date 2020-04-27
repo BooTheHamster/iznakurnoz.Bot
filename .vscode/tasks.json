@@ -14,16 +14,29 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "publish",
+            "label": "publish package",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "publish",
                 "${workspaceFolder}/iznakurnoz.Bot.csproj",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/property:PublishSingleFile=true",
+                "--runtime",
+                "linux-x64",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary",
+                "/property:DebugType=None"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "make DEB package",
+            "command": "${workspaceFolder}/make-deb.sh",
+            "type": "shell",
+            "args": [],
+            "problemMatcher": []
         }
     ]
 }
