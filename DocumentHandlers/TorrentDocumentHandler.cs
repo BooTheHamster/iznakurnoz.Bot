@@ -9,14 +9,17 @@ namespace iznakurnoz.Bot.DocumentHandlers
     internal class TorrentDocumentHandler : IBotDocumentHandler
     {
         private readonly IBotTelegramClient _botClient;
+        private readonly IConfigProvider _configProvider;
         private readonly ILogger<TorrentDocumentHandler> _logger;
 
         public TorrentDocumentHandler(
             ILogger<TorrentDocumentHandler> logger,
-            IBotTelegramClient botClient)
+            IBotTelegramClient botClient,
+            IConfigProvider configProvider)
         {
             _logger = logger;
             _botClient = botClient;
+            _configProvider = configProvider;
         }
         public bool HandleDocument(Message message)
         {
@@ -41,7 +44,7 @@ namespace iznakurnoz.Bot.DocumentHandlers
 
             // Сохранение файла в каталог где демон transmission может их загрузить.
             var tempFilename = Path.Combine(
-                _botClient.Config.TorrentServerSettings.WatchDirectoryPath, 
+                _configProvider.CurrentConfig.TorrentServerSettings.WatchDirectoryPath, 
                 message.Document.FileName);
 
             try

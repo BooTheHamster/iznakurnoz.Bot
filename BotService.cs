@@ -8,7 +8,6 @@ using Iznakurnoz.Bot.Configuration;
 using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 
@@ -26,17 +25,18 @@ namespace Iznakurnoz.Bot
         private readonly IEnumerable<IBotDocumentHandler> _botDocumentHandlers;
 
         public BotService(
-            ILogger<BotService> logger,
-            IOptionsMonitor<BotConfig> configMonitor,
+            ILogger<BotService> logger,            
             IEnumerable<IBotCommandHandler> botCommandHandlers,
             IEnumerable<IBotDocumentHandler> botDocumentHandlers,
             IBotTelegramClientControl botClientControl,
-            IBotTelegramClient botClient)
+            IBotTelegramClient botClient,
+            IConfigProvider configProvider)
         {
             _logger = logger;
             _botClientControl = botClientControl;
             _botClient = botClient;
-            _config = configMonitor.CurrentValue;
+            _config = configProvider.CurrentConfig;
+            configProvider.Changed += OnConfigChanged;
             _botDocumentHandlers = botDocumentHandlers.ToArray();
 
             foreach (var botCommand in botCommandHandlers)
@@ -58,13 +58,30 @@ namespace Iznakurnoz.Bot
                 }
             }
 
-            configMonitor.OnChange(OnOptionChanged);
             _botClientControl.OnMessageReceived += BotOnMessageReceived;
+        }
+
+        private void OnConfigChanged(object sender, BotConfig config)
+        {
+            _config = config;
+
+            if (!ConfigurationChecker.CheckConfig(_config, _logger))
+            {
+                return;
+            }
+
+            GetStartTask(0);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting bot.");
+
+            if (!ConfigurationChecker.CheckConfig(_config, _logger))
+            {
+                return Task.CompletedTask;
+            }
+
             return GetStartTask(0);
 
         }
@@ -72,39 +89,34 @@ namespace Iznakurnoz.Bot
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping bot.");
-            _botClientControl.Stop();
+            StopClient();
+
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
-            _botClientControl = null;
+            StopClient();
             _logger.LogInformation("Disposing ...");
+        }
+
+        private void StopClient()
+        {
+            _botClientControl?.Stop();
+            _botClientControl = null;
         }
 
         private Task TryStartBot()
         {
-            if (!ConfigurationChecker.CheckConfig(_config, _logger))
+            if (_botClientControl.Start(_config))            
             {
-                return GetStartTask();
+                return Task.CompletedTask;
             }
 
-            if (string.IsNullOrWhiteSpace(_config.AuthToken))
-            {
-                _logger.LogInformation("AuthToken not defined. Wait configuration ...");
-                return GetStartTask();
-            }
-
-            _botClientControl.SetConfig(_config);
-            if (!_botClientControl.Start())
-            {
-                return GetStartTask();
-            }
-
-            return Task.CompletedTask;
+            return GetStartTask(StartWaitDelayInMilliseconds);
         }
 
-        private Task GetStartTask(int delay = StartWaitDelayInMilliseconds)
+        private Task GetStartTask(int delay)
         {
             return Task.Delay(delay).ContinueWith(task => TryStartBot());
         }
@@ -198,12 +210,6 @@ namespace Iznakurnoz.Bot
         private bool IsCommand(string text)
         {
             return text.StartsWith(CommandPrefix);
-        }
-
-        private void OnOptionChanged(BotConfig config, string name)
-        {
-            _config = config;
-            _logger.LogInformation($"Bot configuration reloaded");
         }
     }
 }

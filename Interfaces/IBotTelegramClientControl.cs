@@ -10,16 +10,11 @@ namespace Iznakurnoz.Bot.Interfaces
     internal interface IBotTelegramClientControl
     {
         /// <summary>
-        /// Конфигурирование клиента.
-        /// </summary>
-        /// <param name="config">Настройки бота.</param>
-        void SetConfig(BotConfig config);
-
-        /// <summary>
         /// Запуск клиента на прием сообщений.
         /// </summary>
-        /// <returns></returns>
-        bool Start();
+        /// <param name="config">Настройки бота.</param>
+        /// <returns>Истина, если бот запущен.</returns>
+        bool Start(BotConfig config);
 
         /// <summary>
         /// Остановить клиент бота.

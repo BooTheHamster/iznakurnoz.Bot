@@ -32,7 +32,8 @@ namespace Iznakurnoz.Bot
                     services.Configure<BotConfig>(hostContext.Configuration.GetSection("config"));
 
                     services.AddSingleton<IHostedService, BotService>();
-                    services.AddSingleton<IDataStorage, DataStorage>();                   
+                    services.AddSingleton<IDataStorage, DataStorage>();
+                    services.AddSingleton<IConfigProvider, ConfigProvider>();
                     services.AddSingleton<BotTelegramClient, BotTelegramClient>();
                     services.AddSingleton<IBotTelegramClient>(s => s.GetRequiredService<BotTelegramClient>());
                     services.AddSingleton<IBotTelegramClientControl>(s => s.GetRequiredService<BotTelegramClient>());

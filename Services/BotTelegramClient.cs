@@ -11,7 +11,10 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace iznakurnoz.Bot.Services
-{
+{    
+    /// <summary>
+    /// Клиент для работы с телеграм-ботом.
+    /// </summary>
     internal class BotTelegramClient : IBotTelegramClient, IBotTelegramClientControl
     {
         private readonly ILogger _logger;
@@ -22,8 +25,6 @@ namespace iznakurnoz.Bot.Services
         {
             _logger = logger;
         }
-
-        public BotConfig Config => _config;
 
         public event EventHandler<MessageEventArgs> OnMessageReceived;
 
@@ -68,16 +69,13 @@ namespace iznakurnoz.Bot.Services
             _client?.SendTextMessageAsync(chat, message, ParseMode.Html);
         }
 
-        public void SetConfig(BotConfig config)
-        {
-            _config = config;
-            Stop();
-        }
-
-        public bool Start()
+        public bool Start(BotConfig config)
         {
             try
             {
+                Stop();
+
+                _config = config;
                 var proxy = new HttpToSocks5Proxy(
                     _config.ProxySettings.Address,
                     _config.ProxySettings.Port,

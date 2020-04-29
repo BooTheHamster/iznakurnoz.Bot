@@ -1,6 +1,5 @@
 using System.IO;
 using System.Threading.Tasks;
-using Iznakurnoz.Bot.Configuration;
 using Telegram.Bot.Types;
 
 namespace Iznakurnoz.Bot.Interfaces
@@ -23,11 +22,5 @@ namespace Iznakurnoz.Bot.Interfaces
         /// <param name="fileId">Идентификатор файла.</param>
         /// <returns>Файл.</returns>
         Task<Stream> GetFile(string fileId);
-
-        /// <summary>
-        /// Конфигурация бота.
-        /// </summary>
-        /// <value></value>
-        BotConfig Config { get; }
     }
 }
