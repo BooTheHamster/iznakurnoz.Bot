@@ -20,7 +20,7 @@ namespace iznakurnoz.Bot.CommandHandlers
             ILogger<ConfigProvider> logger,
             IOptionsMonitor<BotConfig> configMonitor)
         {
-            this._logger = logger;
+            _logger = logger;
             _config = configMonitor.CurrentValue;
             configMonitor.OnChange(OnOptionChanged);
         }

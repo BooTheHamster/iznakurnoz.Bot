@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using iznakurnoz.Bot.CommandHandlers;
 using iznakurnoz.Bot.DocumentHandlers;
@@ -63,7 +64,7 @@ namespace Iznakurnoz.Bot
             if (!Directory.Exists(configDirectoryPath))
             {
                 Directory.CreateDirectory(configDirectoryPath);
-            }
+            }  
 
             var configFilePath = Path.Combine(configDirectoryPath, AppSettingsFilename);
 
