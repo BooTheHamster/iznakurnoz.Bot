@@ -4,6 +4,9 @@ using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
 {
+    /// <summary>
+    /// Обработчик команды wifi.
+    /// </summary>
     internal class WifiCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
@@ -25,7 +28,6 @@ namespace iznakurnoz.Bot.CommandHandlers
                 BotClient.SendTextMessage(message.Chat, "Ok");
                 return;
             }
-
         }
     }
 }

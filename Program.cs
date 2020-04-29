@@ -32,14 +32,15 @@ namespace Iznakurnoz.Bot
                     services.Configure<BotConfig>(hostContext.Configuration.GetSection("config"));
 
                     services.AddSingleton<IHostedService, BotService>();
-                    services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
-                    services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
-                    services.AddSingleton<IDataStorage, DataStorage>();
-                    
+                    services.AddSingleton<IDataStorage, DataStorage>();                   
                     services.AddSingleton<BotTelegramClient, BotTelegramClient>();
                     services.AddSingleton<IBotTelegramClient>(s => s.GetRequiredService<BotTelegramClient>());
                     services.AddSingleton<IBotTelegramClientControl>(s => s.GetRequiredService<BotTelegramClient>());
+
+                    services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, WifiCommandHandler>();
+                    services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
