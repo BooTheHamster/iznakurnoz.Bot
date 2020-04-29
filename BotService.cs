@@ -163,7 +163,7 @@ namespace Iznakurnoz.Bot
             }
         }
 
-        private bool ParseCommand(string message, out string command, out IEnumerable<string> arguments)
+        private bool ParseCommand(string message, out string command, out IReadOnlyCollection<string> arguments)
         {
             command = null;
             arguments = null;

@@ -4,17 +4,14 @@ using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
 {
-    /// <summary>
-    /// Обработчик команды "hi".
-    /// </summary>
-    internal class HiCommandHandler : BaseCommandHandler, IBotCommandHandler
+    internal class WifiCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
         {
-            "hi"
+            "wifi"
         };
 
-        public HiCommandHandler(IBotTelegramClient botTelegramClient) 
+        public WifiCommandHandler(IBotTelegramClient botTelegramClient) 
             : base(botTelegramClient)
         {
         }
@@ -23,7 +20,12 @@ namespace iznakurnoz.Bot.CommandHandlers
 
         public void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments)
         {
-            BotClient.SendTextMessage(message.Chat, $"<code>hi {message.From.FirstName}! C#</code>");
+            if (arguments.Count == 0)
+            {
+                BotClient.SendTextMessage(message.Chat, "Ok");
+                return;
+            }
+
         }
     }
 }

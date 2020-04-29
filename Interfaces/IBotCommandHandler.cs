@@ -20,6 +20,6 @@ namespace Iznakurnoz.Bot.Interfaces
         /// <param name="command">Команда.</param>
         /// <param name="arguments">Параметры команды.</param>
         /// <returns>Ответное сообщение после обработки команды которое бот отправит.</returns>
-        void HandleCommand(Message message, string command, IEnumerable<string> arguments);
+        void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments);
     }
 }
