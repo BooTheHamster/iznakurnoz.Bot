@@ -9,26 +9,25 @@ namespace iznakurnoz.Bot.Services
     /// </summary>
     internal class FilePathProvider
     {
-        private const string DaemonCommandLineFlag = "--daemon";
         private const string BotFolderName = "iznakurnozbot";
-        private static readonly bool _asDaemon;
+        private readonly CommandLineProvider _commandLineProvider;
 
-        static FilePathProvider()
+        public FilePathProvider(CommandLineProvider commandLineProvider)
         {
-            _asDaemon = Environment.CommandLine.Contains(DaemonCommandLineFlag);
+            _commandLineProvider = commandLineProvider;
         }
 
         /// <summary>
         /// Возвращает полный путь к каталогу с файлом конфигурации.
         /// </summary>
         /// <returns>Полный путь к каталогу с файлом конфигурации.</returns>
-        public static string GetConfigDirectoryPath()
+        public string GetConfigDirectoryPath()
         {
             var folder = string.Empty;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (_asDaemon)
+                if (_commandLineProvider.IsDaemonMode)
                 {
                     folder = "/etc";
                 }
@@ -37,7 +36,8 @@ namespace iznakurnoz.Bot.Services
                     // Для отладки не в режиме демона будет использоваться конфиг из локального каталога пользователя.
                     folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 }
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             }
@@ -50,13 +50,13 @@ namespace iznakurnoz.Bot.Services
         /// Возвращает полный путь к каталогу с файлами данных.
         /// </summary>
         /// <returns>Полный путь к каталогу с файлами данных.</returns>
-        public static string GetDataDirectoryPath()
+        public string GetDataDirectoryPath()
         {
             var folder = string.Empty;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (_asDaemon)
+                if (_commandLineProvider.IsDaemonMode)
                 {
                     folder = "/var";
                 }
@@ -65,7 +65,8 @@ namespace iznakurnoz.Bot.Services
                     // Для отладки не в режиме демона будет использоваться локальный каталог пользователя.
                     folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 }
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             }

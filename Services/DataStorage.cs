@@ -9,8 +9,8 @@ namespace iznakurnoz.Bot.Services
     /// <summary>
     /// Хранилище произвольных данных бота.
     /// </summary>
-    public class DataStorage : IDataStorage
-    {        
+    internal class DataStorage : IDataStorage
+    {
         /// <summary>
         /// Наименование файла в котором хранится информация хранилища.
         /// </summary>
@@ -19,6 +19,12 @@ namespace iznakurnoz.Bot.Services
         private IDictionary<string, object> _storage = null;
         private IDictionary<string, string> _readedStorage = null;
         private string _dataFilePath = null;
+        private readonly FilePathProvider _filePathProvider;
+
+        public DataStorage(FilePathProvider filePathProvider)
+        {
+            _filePathProvider = filePathProvider;
+        }
 
         public T Get<T>(string key)
         {
@@ -49,7 +55,7 @@ namespace iznakurnoz.Bot.Services
             var filePath = GetFilePath();
             var options = new JsonSerializerOptions()
             {
-                WriteIndented = true                
+                WriteIndented = true
             };
             var storageContent = JsonSerializer.Serialize(_storage, options);
             File.WriteAllText(filePath, storageContent);
@@ -69,13 +75,13 @@ namespace iznakurnoz.Bot.Services
                 var storageContent = File.ReadAllText(filePath);
                 var readedStorage = JsonSerializer.Deserialize<IDictionary<string, object>>(storageContent);
                 _readedStorage = new Dictionary<string, string>();
-                
+
                 foreach (var pair in readedStorage)
                 {
                     _readedStorage.Add(pair.Key, pair.Value.ToString());
                 }
             }
-            
+
             _storage = new Dictionary<string, object>();
         }
 
@@ -83,7 +89,7 @@ namespace iznakurnoz.Bot.Services
         {
             if (string.IsNullOrWhiteSpace(_dataFilePath))
             {
-                _dataFilePath = Path.Combine(FilePathProvider.GetDataDirectoryPath(), DataStorageFilename);
+                _dataFilePath = Path.Combine(_filePathProvider.GetDataDirectoryPath(), DataStorageFilename);
             }
 
             return _dataFilePath;

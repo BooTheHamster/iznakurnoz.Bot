@@ -20,21 +20,24 @@ namespace Iznakurnoz.Bot
         private readonly ILogger _logger;
         private IBotTelegramClientControl _botClientControl;
         private readonly IBotTelegramClient _botClient;
+        private readonly CommandLineProvider _commandLineProvider;
         private BotConfig _config;
         private IDictionary<string, IBotCommandHandler> _botCommandHandlers = new Dictionary<string, IBotCommandHandler>();
         private readonly IEnumerable<IBotDocumentHandler> _botDocumentHandlers;
 
         public BotService(
-            ILogger<BotService> logger,            
+            ILogger<BotService> logger,
             IEnumerable<IBotCommandHandler> botCommandHandlers,
             IEnumerable<IBotDocumentHandler> botDocumentHandlers,
             IBotTelegramClientControl botClientControl,
             IBotTelegramClient botClient,
-            IConfigProvider configProvider)
+            IConfigProvider configProvider,
+            CommandLineProvider commandLineProvider)
         {
             _logger = logger;
             _botClientControl = botClientControl;
             _botClient = botClient;
+            _commandLineProvider = commandLineProvider;
             _config = configProvider.CurrentConfig;
             configProvider.Changed += OnConfigChanged;
             _botDocumentHandlers = botDocumentHandlers.ToArray();
@@ -108,8 +111,23 @@ namespace Iznakurnoz.Bot
 
         private Task TryStartBot()
         {
-            if (_botClientControl.Start(_config))            
+            if (_botClientControl.Start(_config))
             {
+                if (_commandLineProvider.HasTestCommand)
+                {
+                    return Task.Factory
+                        .StartNew(() =>
+                        {
+                            var testMessage = new Message
+                            {
+                                Text = _commandLineProvider.TestCommand
+                            };
+
+                            _logger.LogInformation($"Handle test command: {testMessage.Text}");
+                            HandleCommand(testMessage);
+                        });
+                }
+
                 return Task.CompletedTask;
             }
 

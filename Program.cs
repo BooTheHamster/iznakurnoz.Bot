@@ -22,10 +22,13 @@ namespace Iznakurnoz.Bot
 
         public static async Task Main(string[] args)
         {
+            var commandLineProvider = new CommandLineProvider();
+            var filePathProvider = new FilePathProvider(commandLineProvider);
+
             var builder = new HostBuilder()
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    ConfigureHost(config, args);
+                    ConfigureHost(config, args, filePathProvider);
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
@@ -38,6 +41,9 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<BotTelegramClient, BotTelegramClient>();
                     services.AddSingleton<IBotTelegramClient>(s => s.GetRequiredService<BotTelegramClient>());
                     services.AddSingleton<IBotTelegramClientControl>(s => s.GetRequiredService<BotTelegramClient>());
+                    services.AddSingleton<RouterRequestService>();
+                    services.AddSingleton(commandLineProvider);
+                    services.AddSingleton(filePathProvider);
 
                     services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
@@ -57,9 +63,9 @@ namespace Iznakurnoz.Bot
             logging.AddConsole();
         }
 
-        private static void ConfigureHost(IConfigurationBuilder builder, string[] args)
+        private static void ConfigureHost(IConfigurationBuilder builder, string[] args, FilePathProvider filePathProvider)
         {
-            var configDirectoryPath = FilePathProvider.GetConfigDirectoryPath();
+            var configDirectoryPath = filePathProvider.GetConfigDirectoryPath();
 
             if (!Directory.Exists(configDirectoryPath))
             {

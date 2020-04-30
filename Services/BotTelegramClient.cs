@@ -63,7 +63,13 @@ namespace iznakurnoz.Bot.Services
         {
             if (chat == null)
             {
-                return;
+                chat = new Chat()
+                {
+                    Id = _config.AdminId,
+                    Type = ChatType.Private
+                };
+
+                _logger.LogInformation($"SendTextMessage: {message}");
             }
 
             _client?.SendTextMessageAsync(chat, message, ParseMode.Html);
