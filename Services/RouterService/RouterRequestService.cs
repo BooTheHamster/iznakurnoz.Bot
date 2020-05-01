@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using iznakurnoz.Bot.Extensions;
 using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -18,6 +19,8 @@ namespace iznakurnoz.Bot.Services.RouterService
     /// </summary>
     internal partial class RouterRequestService
     {
+        private const string NoDevice = "Нет устройства с подходящими параметрами.";
+        private const string InvalidParameters = "Неверные параметры";
         private static readonly Regex _httpIdRegex = new Regex("'http_id':\\s*'(.*)'", RegexOptions.IgnoreCase);
         private static readonly IDictionary<string, string> _filterStateDescription = new Dictionary<string, string>()
         {
@@ -42,12 +45,87 @@ namespace iznakurnoz.Bot.Services.RouterService
             _client = new HttpClient();
         }
 
+        async public Task<string> RemoveDeviceFromWirelessFilter(IEnumerable<string> macAddresses, IEnumerable<string> deviceNames)
+        {   
+            var builder = new StringBuilder();        
+            var parameters = await GetWirelessFilterParameters();
+            var count = 0;
+            var needUpdateCount = 0;
+
+            foreach (var macAddress in macAddresses)
+            {
+                count++;
+
+                if (!parameters.RemoveByMacAddress(macAddress))
+                {
+                    builder.AppendLine($"Не найдено устройство с MAC адресом {macAddress}");
+                    continue;
+                }
+
+                needUpdateCount++;
+            }
+
+            foreach (var deviceName in deviceNames)
+            {
+                count++;
+
+                if (!parameters.RemoveByDeviceName(deviceName))
+                {
+                    builder.AppendLine($"Не найдено устройство {deviceName}");
+                    continue;
+                };
+
+                needUpdateCount++;
+            }
+
+            if (needUpdateCount == 0)
+            {
+                if (count == 0)
+                {
+                    return "Не найдено подходящих устройств для удаления";
+                }
+
+                return builder.ToString();
+            }
+
+            return await UploadWirelessFilterParameters(parameters);
+        }
+
         async public Task<string> AddDeviceToWirelessFilter(string macAddress, string deviceName)
         {
             var parameters = await GetWirelessFilterParameters();
 
             parameters.AddDevice(macAddress, deviceName);
 
+            return await UploadWirelessFilterParameters(parameters);
+        }
+
+        async public Task<string> GetWirelessFilterPage()
+        {
+            var parameters = await GetWirelessFilterParameters();
+            var builder = new StringBuilder();
+            var filterStateMessage = "неизвестно";
+
+            if (_filterStateDescription.TryGetValue(parameters.Mode, out var description))
+            {
+                filterStateMessage = description;
+            }
+
+            builder
+                .AppendLine($"<b>Состояние фильтра WiFi:</b> {filterStateMessage}")
+                .AppendLine()
+                .AppendLine($"<b>Список устройств:</b>");
+
+            foreach (var name in parameters.Devices.Select(d => d.Name))
+            {
+                    builder.AppendLine(name);
+            }
+
+            return builder.ToString();
+        }
+
+        async private Task<string> UploadWirelessFilterParameters(WirelessFilterParameters parameters)
+        {
             var wlMacList = string.Empty;
             var wlMacNames = string.Empty;
 
@@ -82,30 +160,6 @@ namespace iznakurnoz.Bot.Services.RouterService
                 });
 
             return response;
-        }
-
-        async public Task<string> GetWirelessFilterPage()
-        {
-            var parameters = await GetWirelessFilterParameters();
-            var builder = new StringBuilder();
-            var filterStateMessage = "неизвестно";
-
-            if (_filterStateDescription.TryGetValue(parameters.Mode, out var description))
-            {
-                filterStateMessage = description;
-            }
-
-            builder
-                .AppendLine($"<b>Состояние фильтра WiFi:</b> {filterStateMessage}")
-                .AppendLine()
-                .AppendLine($"<b>Список устройств:</b>");
-
-            foreach (var name in parameters.Devices.Select(d => d.Name))
-            {
-                    builder.AppendLine(name);
-            }
-
-            return builder.ToString();
         }
 
         async private Task<WirelessFilterParameters> GetWirelessFilterParameters()

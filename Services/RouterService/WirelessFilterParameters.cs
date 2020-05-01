@@ -77,7 +77,33 @@ namespace iznakurnoz.Bot.Services.RouterService
                 }
             }
 
-            internal void AddDevice(string macAddress, string deviceName)
+            public bool RemoveByMacAddress(string macAddress)
+            {
+                return !string.IsNullOrWhiteSpace(macAddress) && _deviceMacToNameMap.Remove(macAddress);
+            }
+
+            public bool RemoveByDeviceName(string deviceName)
+            {
+                if (string.IsNullOrWhiteSpace(deviceName))
+                {
+                    return false;
+                }
+
+                var keys = _deviceMacToNameMap
+                    .Where(pair => pair.Value == deviceName)
+                    .Select(pair => pair.Key)
+                    .ToArray();
+                var result = false;
+
+                foreach (var key in keys)
+                {
+                    result = _deviceMacToNameMap.Remove(key) || result;
+                }
+
+                return result;
+            }
+
+            public void AddDevice(string macAddress, string deviceName)
             {
                 _deviceMacToNameMap[macAddress] = deviceName;
             }

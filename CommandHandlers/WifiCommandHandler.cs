@@ -33,8 +33,13 @@ namespace iznakurnoz.Bot.CommandHandlers
             _routerRequestService = routerRequestService;
             _optionHandlers = new Dictionary<string, Action<Message, IEnumerator<string>>>()
             {
+                { "s", StateOptionHandler },
                 { "state", StateOptionHandler },
-                { "add", AddOptionHandler }
+                { "a", AddOptionHandler },
+                { "add", AddOptionHandler },
+                { "d", DeleteOptionHandler },
+                { "del", DeleteOptionHandler },
+                { "delete", DeleteOptionHandler }
             };
         }
 
@@ -73,6 +78,7 @@ namespace iznakurnoz.Bot.CommandHandlers
             if (!parameters.MoveNext())
             {
                 BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
+                return;
             }
 
             var parameter1 = parameters.Current;
@@ -117,6 +123,52 @@ namespace iznakurnoz.Bot.CommandHandlers
             }
 
             var resultMessage = await _routerRequestService.AddDeviceToWirelessFilter(macAddress, deviceName);
+            BotClient.SendTextMessage(message.Chat, resultMessage);
+        }
+
+        async private void DeleteOptionHandler(Message message, IEnumerator<string> parameters)
+        {
+            if (!parameters.MoveNext())
+            {
+                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
+                return;
+            }
+
+            var macAddresses = new List<string>();
+            var deviceNames = new List<string>();
+
+            do
+            {
+                var isParameterMacAddress = parameters.Current.TryConvertToMacAddress(out var macAddress);
+                var isParameterDeviceName = parameters.Current.TryConvertToDeviceName(out var deviceName);
+
+                if (!isParameterMacAddress && !isParameterDeviceName)
+                {
+                    continue;
+                }
+
+                if (isParameterMacAddress)
+                {
+                    macAddresses.Add(macAddress);                    
+                }
+
+                if (isParameterDeviceName)
+                {
+                    deviceNames.Add(deviceName);
+                }
+
+            } while (parameters.MoveNext());
+
+            string resultMessage;
+            if (macAddresses.Count + deviceNames.Count == 0)
+            {
+                resultMessage = InvalidParameters;
+            }
+            else
+            {
+                resultMessage = await _routerRequestService.RemoveDeviceFromWirelessFilter(macAddresses, deviceNames);
+            }
+
             BotClient.SendTextMessage(message.Chat, resultMessage);
         }
     }
