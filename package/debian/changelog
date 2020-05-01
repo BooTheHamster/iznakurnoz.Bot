@@ -1,3 +1,9 @@
+iznakurnozbot (0.2-1) unstable; urgency=low
+
+    * Add Wifi commands.      
+
+ -- Oleg Sevostyanov <oleg.sev@gmail.com>  Fri, 01 May 2020 17:10:27 +0400 
+
 iznakurnozbot (0.1-1) unstable; urgency=low
 
     * Initial release.
