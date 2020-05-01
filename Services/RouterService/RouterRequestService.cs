@@ -32,6 +32,7 @@ namespace iznakurnoz.Bot.Services.RouterService
         private const string StatusPageUri = "#status-home.asp";
         private const string TomatoCgi = "tomato.cgi";
         private const string UpdateCgi = "update.cgi";
+        private const string ShellCgi = "shell.cgi";
         private readonly IConfigProvider _configProvider;
         private readonly HttpClient _client;
         private readonly ILogger<RouterRequestService> _logger;
@@ -122,6 +123,41 @@ namespace iznakurnoz.Bot.Services.RouterService
             }
 
             return builder.ToString();
+        }
+
+        async public Task<string> EnableWiFiByMacAddressOrDeviceName(string macAddress, string deviceName, bool enabled)
+        {
+            if (string.IsNullOrWhiteSpace(macAddress))
+            {
+                var parameters = await GetWirelessFilterParameters();
+                var device = parameters.Devices.Where(d => d.Name == deviceName).FirstOrDefault();
+
+                if (device != null)
+                {
+                    macAddress = device.MacAddress;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(macAddress))
+            {
+                return NoDevice;
+            }
+
+            var iptablesOperation = enabled
+                ? "D"
+                : "I";
+            var command = $"iptables -{iptablesOperation} FORWARD -m mac --mac-source {macAddress} -j DROP";
+
+            var httpId = await Login();
+            var response = await Request(
+                ShellCgi,
+                httpId,
+                new NameValueCollection()
+                {
+                    { "command", command }
+                });
+
+            return "Ok";
         }
 
         async private Task<string> UploadWirelessFilterParameters(WirelessFilterParameters parameters)

@@ -39,7 +39,9 @@ namespace iznakurnoz.Bot.CommandHandlers
                 { "add", AddOptionHandler },
                 { "d", DeleteOptionHandler },
                 { "del", DeleteOptionHandler },
-                { "delete", DeleteOptionHandler }
+                { "delete", DeleteOptionHandler },
+                { "off", OffOptionHandler },
+                { "on", OnOptionHandler }
             };
         }
 
@@ -149,7 +151,7 @@ namespace iznakurnoz.Bot.CommandHandlers
 
                 if (isParameterMacAddress)
                 {
-                    macAddresses.Add(macAddress);                    
+                    macAddresses.Add(macAddress);
                 }
 
                 if (isParameterDeviceName)
@@ -168,6 +170,38 @@ namespace iznakurnoz.Bot.CommandHandlers
             {
                 resultMessage = await _routerRequestService.RemoveDeviceFromWirelessFilter(macAddresses, deviceNames);
             }
+
+            BotClient.SendTextMessage(message.Chat, resultMessage);
+        }
+
+        private void OffOptionHandler(Message message, IEnumerator<string> parameters)
+        {
+            EnableWifiForDevice(message, parameters, false);
+        }
+
+        private void OnOptionHandler(Message message, IEnumerator<string> parameters)
+        {
+            EnableWifiForDevice(message, parameters, true);
+        }
+
+        async private void EnableWifiForDevice(Message message, IEnumerator<string> parameters, bool enabled)
+        {
+            if (!parameters.MoveNext())
+            {
+                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
+                return;
+            }
+            
+            var isParameterMacAddress = parameters.Current.TryConvertToMacAddress(out var macAddress);
+            var isParameterDeviceName = parameters.Current.TryConvertToDeviceName(out var deviceName);
+
+            if (!isParameterMacAddress && !isParameterDeviceName)
+            {
+                BotClient.SendTextMessage(message.Chat, InvalidParameters);
+                return;
+            }
+
+            var resultMessage = await _routerRequestService.EnableWiFiByMacAddressOrDeviceName(macAddress, deviceName, enabled);
 
             BotClient.SendTextMessage(message.Chat, resultMessage);
         }
