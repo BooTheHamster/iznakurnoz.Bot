@@ -43,11 +43,14 @@ namespace iznakurnoz.Bot.Services
 
         private void TestOptionHandler(IEnumerator<string> argumentEnumerator)
         {
-            if (argumentEnumerator.MoveNext())
+            TestCommand = string.Empty;
+
+            while (argumentEnumerator.MoveNext())
             {
-                TestCommand = argumentEnumerator.Current;
-                HasTestCommand = !string.IsNullOrWhiteSpace(TestCommand);
+                TestCommand += " " + argumentEnumerator.Current;
             }
+
+            HasTestCommand = !string.IsNullOrWhiteSpace(TestCommand);
         }
 
         private void DaemonOptionHandler(IEnumerator<string> argumentEnumerator)

@@ -17,12 +17,12 @@ namespace iznakurnoz.Bot.CommandHandlers
             "kodi"
         };
 
+        public IEnumerable<string> SupportedCommands => _supportedCommands;
+
         public KodiCommandHandler(IBotTelegramClient botTelegramClient) 
             : base(botTelegramClient)
         {
         }
-
-        public IEnumerable<string> SupportedCommands => _supportedCommands;
 
         public void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments)
         {

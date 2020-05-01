@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Net;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,16 +11,14 @@ using System.Web;
 using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace iznakurnoz.Bot.CommandHandlers
+namespace iznakurnoz.Bot.Services.RouterService
 {
     /// <summary>
     /// Сервис для запросов к роутеру.
     /// </summary>
-    internal class RouterRequestService
+    internal partial class RouterRequestService
     {
         private static readonly Regex _httpIdRegex = new Regex("'http_id':\\s*'(.*)'", RegexOptions.IgnoreCase);
-        private static readonly Regex _wlMacnamesRegex = new Regex("'macnames':\\s*'(.*)'", RegexOptions.IgnoreCase);
-        private static readonly Regex _wlMacModeRegex = new Regex("'wl_macmode':\\s*'(.*)'", RegexOptions.IgnoreCase);
         private static readonly IDictionary<string, string> _filterStateDescription = new Dictionary<string, string>()
         {
             { "disabled", "отключен" },
@@ -44,10 +42,76 @@ namespace iznakurnoz.Bot.CommandHandlers
             _client = new HttpClient();
         }
 
+        async public Task<string> AddDeviceToWirelessFilter(string macAddress, string deviceName)
+        {
+            var parameters = await GetWirelessFilterParameters();
+
+            parameters.AddDevice(macAddress, deviceName);
+
+            var wlMacList = string.Empty;
+            var wlMacNames = string.Empty;
+
+            foreach (var device in parameters.Devices)
+            {
+                if (wlMacList.Length > 0)
+                {
+                    wlMacList += " ";
+                }
+
+                wlMacList += device.MacAddress;
+
+                if (wlMacNames.Length > 0)
+                {
+                    wlMacNames += ">";
+                }
+
+                wlMacNames += $"{device.MacAddress.Replace(":", string.Empty)}<{device.Name}";
+            }
+
+            var httpId = await Login();
+            var response = await Request(
+                TomatoCgi,
+                httpId,
+                new NameValueCollection()
+                {
+                    { "_ajax", "1" },
+                    { "_service", "*" },
+                    { "wl_macmode", parameters.Mode },
+                    { "wl_maclist", wlMacList },
+                    { "macnames", wlMacNames },
+                });
+
+            return response;
+        }
+
         async public Task<string> GetWirelessFilterPage()
         {
+            var parameters = await GetWirelessFilterParameters();
+            var builder = new StringBuilder();
+            var filterStateMessage = "неизвестно";
+
+            if (_filterStateDescription.TryGetValue(parameters.Mode, out var description))
+            {
+                filterStateMessage = description;
+            }
+
+            builder
+                .AppendLine($"<b>Состояние фильтра WiFi:</b> {filterStateMessage}")
+                .AppendLine()
+                .AppendLine($"<b>Список устройств:</b>");
+
+            foreach (var name in parameters.Devices.Select(d => d.Name))
+            {
+                    builder.AppendLine(name);
+            }
+
+            return builder.ToString();
+        }
+
+        async private Task<WirelessFilterParameters> GetWirelessFilterParameters()
+        {
             var httpId = await Login();
-            var page = await Request(
+            var response = await Request(
                 UpdateCgi,
                 httpId,
                 new NameValueCollection()
@@ -55,48 +119,11 @@ namespace iznakurnoz.Bot.CommandHandlers
                     { "exec", "nvram" },
                     { "arg0", "wl_macmode,wl_maclist,macnames" },
                 });
-            var builder = new StringBuilder();
-            var match = _wlMacModeRegex.Match(page);
-            var filterStateMessage = "неизвестно";
-
-            if (match.Success)
-            {
-                var filterState = match.Groups[1].Value;
-                if (_filterStateDescription.TryGetValue(filterState, out var description))
-                {
-                    filterStateMessage = description;
-                }
-            } 
-
-            builder
-                .AppendLine($"<b>Состояние фильтра WiFi:</b> {filterStateMessage}")
-                .AppendLine();
-
-            match = _wlMacnamesRegex.Match(page);
-
-
-            if (match.Success)
-            {
-                builder.AppendLine($"<b>Список устройств:</b>");
-
-                var filterDeviceMacAndNames = match.Groups[1].Value
-                    .Split(">", StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var item in filterDeviceMacAndNames)
-                {
-                    var macNames = item.Split("<");
-
-                    if (macNames.Length == 2)
-                    {
-                        builder.AppendLine($"{macNames[1]}");
-                    }
-                }
-            }
-
-            return builder.ToString();
+            
+            return new WirelessFilterParameters(response);
         }
 
-        async public Task<string> Login()
+        async private Task<string> Login()
         {
             var page = await Request(StatusPageUri);
             var match = _httpIdRegex.Match(page);
