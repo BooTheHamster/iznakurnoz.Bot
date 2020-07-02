@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using iznakurnoz.Bot.CommandHandlers;
@@ -6,6 +7,7 @@ using iznakurnoz.Bot.DocumentHandlers;
 using iznakurnoz.Bot.Interfaces;
 using iznakurnoz.Bot.Services;
 using iznakurnoz.Bot.Services.RouterService;
+using iznakurnoz.Bot.Services.TransmissionService;
 using Iznakurnoz.Bot.Configuration;
 using Iznakurnoz.Bot.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -41,13 +43,17 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<BotTelegramClient, BotTelegramClient>();
                     services.AddSingleton<IBotTelegramClient>(s => s.GetRequiredService<BotTelegramClient>());
                     services.AddSingleton<IBotTelegramClientControl>(s => s.GetRequiredService<BotTelegramClient>());
-                    services.AddSingleton<RouterRequestService>();
                     services.AddSingleton(commandLineProvider);
                     services.AddSingleton(filePathProvider);
+
+                    services.AddSingleton<RouterRequestService>();
+                    services.AddSingleton<TransmissionService>();
 
                     services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, WifiCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, TorrentListCommandHandler>();
+
                     services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
