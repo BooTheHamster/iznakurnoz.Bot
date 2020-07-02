@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Generic;
 using iznakurnoz.Bot.Services.RouterService;
 using iznakurnoz.Bot.Extensions;
 using Iznakurnoz.Bot.Interfaces;
 using Telegram.Bot.Types;
+using System.Threading.Tasks;
 
 namespace iznakurnoz.Bot.CommandHandlers
 {
@@ -22,16 +22,16 @@ namespace iznakurnoz.Bot.CommandHandlers
         /// <summary>
         /// Карта соответствия настроек и методов-обработчиков настроек.
         /// </summary>
-        private readonly IDictionary<string, Action<Message, IEnumerator<string>>> _optionHandlers;
+        private readonly IDictionary<string, OptionHandlerDelegate> _optionHandlers;
         private readonly RouterRequestService _routerRequestService;
 
         public WifiCommandHandler(
             IBotTelegramClient botTelegramClient,
             RouterRequestService routerRequestService)
-            : base(botTelegramClient)
+            : base(botTelegramClient, _supportedCommands)
         {
             _routerRequestService = routerRequestService;
-            _optionHandlers = new Dictionary<string, Action<Message, IEnumerator<string>>>()
+            _optionHandlers = new Dictionary<string, OptionHandlerDelegate>()
             {
                 { "s", StateOptionHandler },
                 { "state", StateOptionHandler },
@@ -45,50 +45,47 @@ namespace iznakurnoz.Bot.CommandHandlers
             };
         }
 
-        public IEnumerable<string> SupportedCommands => _supportedCommands;
-
-        public void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments)
+        async public Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
             var argumentEnumerator = arguments.GetEnumerator();
 
             if (!argumentEnumerator.MoveNext())
             {
-                StateOptionHandler(message, null);
-                return;
+                return await StateOptionHandler(message, null);
             }
 
             if (_optionHandlers.TryGetValue(argumentEnumerator.Current, out var handler))
             {
-                handler(message, argumentEnumerator);
+                return await handler(message, argumentEnumerator);
             }
+
+            return null;
         }
 
-        async private void StateOptionHandler(Message message, IEnumerator<string> parameters)
+        async private Task<string> StateOptionHandler(Message message, IEnumerator<string> parameters)
         {
             var result = await _routerRequestService.GetWirelessFilterPage();
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                result = "Не удалось получить информацию о состоянии фильтра.";
+                return "Не удалось получить информацию о состоянии фильтра";
             }
 
-            BotClient.SendTextMessage(message.Chat, result);
+            return result;
         }
 
-        async private void AddOptionHandler(Message message, IEnumerator<string> parameters)
+        private Task<string> AddOptionHandler(Message message, IEnumerator<string> parameters)
         {
             if (!parameters.MoveNext())
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
-                return;
+                return GetAsTextResult(InvalidParameterCount);
             }
 
             var parameter1 = parameters.Current;
 
             if (!parameters.MoveNext())
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
-                return;
+                return GetAsTextResult(InvalidParameterCount);
             }
 
             var parameter2 = parameters.Current;
@@ -98,8 +95,7 @@ namespace iznakurnoz.Bot.CommandHandlers
 
             if (!parameter1IsMacAddress && !parameter2IsMacAddress)
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameters);
-                return;
+                return GetAsTextResult(InvalidParameters);
             }
 
             var parameter1IsDeviceName = parameter1.TryConvertToDeviceName(out var deviceName1);
@@ -120,20 +116,17 @@ namespace iznakurnoz.Bot.CommandHandlers
             }
             else
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
-                return;
+                return GetAsTextResult(InvalidParameterCount);
             }
 
-            var resultMessage = await _routerRequestService.AddDeviceToWirelessFilter(macAddress, deviceName);
-            BotClient.SendTextMessage(message.Chat, resultMessage);
+            return _routerRequestService.AddDeviceToWirelessFilter(macAddress, deviceName);
         }
 
-        async private void DeleteOptionHandler(Message message, IEnumerator<string> parameters)
+        private Task<string> DeleteOptionHandler(Message message, IEnumerator<string> parameters)
         {
             if (!parameters.MoveNext())
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
-                return;
+                return GetAsTextResult(InvalidParameterCount);
             }
 
             var macAddresses = new List<string>();
@@ -161,35 +154,31 @@ namespace iznakurnoz.Bot.CommandHandlers
 
             } while (parameters.MoveNext());
 
-            string resultMessage;
-            if (macAddresses.Count + deviceNames.Count == 0)
+            if ((macAddresses.Count + deviceNames.Count) == 0)
             {
-                resultMessage = InvalidParameters;
+                return GetAsTextResult(InvalidParameters);
             }
             else
             {
-                resultMessage = await _routerRequestService.RemoveDeviceFromWirelessFilter(macAddresses, deviceNames);
+                return _routerRequestService.RemoveDeviceFromWirelessFilter(macAddresses, deviceNames);
             }
-
-            BotClient.SendTextMessage(message.Chat, resultMessage);
         }
 
-        private void OffOptionHandler(Message message, IEnumerator<string> parameters)
+        private Task<string> OffOptionHandler(Message message, IEnumerator<string> parameters)
         {
-            EnableWifiForDevice(message, parameters, false);
+            return EnableWifiForDevice(message, parameters, false);
         }
 
-        private void OnOptionHandler(Message message, IEnumerator<string> parameters)
+        private Task<string> OnOptionHandler(Message message, IEnumerator<string> parameters)
         {
-            EnableWifiForDevice(message, parameters, true);
+            return EnableWifiForDevice(message, parameters, true);
         }
 
-        async private void EnableWifiForDevice(Message message, IEnumerator<string> parameters, bool enabled)
+        private Task<string> EnableWifiForDevice(Message message, IEnumerator<string> parameters, bool enabled)
         {
             if (!parameters.MoveNext())
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameterCount);
-                return;
+                return GetAsTextResult(InvalidParameterCount);
             }
             
             var isParameterMacAddress = parameters.Current.TryConvertToMacAddress(out var macAddress);
@@ -197,13 +186,10 @@ namespace iznakurnoz.Bot.CommandHandlers
 
             if (!isParameterMacAddress && !isParameterDeviceName)
             {
-                BotClient.SendTextMessage(message.Chat, InvalidParameters);
-                return;
+                return GetAsTextResult(InvalidParameters);
             }
 
-            var resultMessage = await _routerRequestService.EnableWiFiByMacAddressOrDeviceName(macAddress, deviceName, enabled);
-
-            BotClient.SendTextMessage(message.Chat, resultMessage);
+            return _routerRequestService.EnableWiFiByMacAddressOrDeviceName(macAddress, deviceName, enabled);
         }
     }
 }

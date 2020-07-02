@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Iznakurnoz.Bot.Interfaces;
 using Telegram.Bot.Types;
 
@@ -15,15 +16,13 @@ namespace iznakurnoz.Bot.CommandHandlers
         };
 
         public HiCommandHandler(IBotTelegramClient botTelegramClient) 
-            : base(botTelegramClient)
+            : base(botTelegramClient, _supportedCommands)
         {
         }
 
-        public IEnumerable<string> SupportedCommands => _supportedCommands;
-
-        public void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments)
+        public Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
-            BotClient.SendTextMessage(message.Chat, $"<code>hi {message.From.FirstName}! C#</code>");
+            return GetAsTextResult($"<code>hi {message.From.FirstName}! C#</code>");
         }
     }
 }

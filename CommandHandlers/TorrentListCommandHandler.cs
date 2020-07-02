@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using iznakurnoz.Bot.Services.TransmissionService;
 using iznakurnoz.Bot.Services.TransmissionService.Interfaces;
 using Iznakurnoz.Bot.Interfaces;
@@ -9,13 +11,14 @@ using Telegram.Bot.Types;
 namespace iznakurnoz.Bot.CommandHandlers
 {
     /// <summary>
-    /// Обработчик команды "tl".
+    /// Обработчик команды получения списка текущих торрентов.
     /// </summary>
     internal class TorrentListCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
         {
             "tl",
+
         };
         private readonly TransmissionService _transmissionService;
         private readonly ILogger<TorrentListCommandHandler> _logger;
@@ -24,22 +27,19 @@ namespace iznakurnoz.Bot.CommandHandlers
             IBotTelegramClient botTelegramClient,
             TransmissionService transmissionService,
             ILogger<TorrentListCommandHandler> logger)
-            : base(botTelegramClient)
+            : base(botTelegramClient, _supportedCommands)
         {
             _transmissionService = transmissionService;
             _logger = logger;
         }
 
-        public IEnumerable<string> SupportedCommands => _supportedCommands;
-
-        public async void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments)
+        public async Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
             var torrents = await _transmissionService.GetTorrentsList();
 
             if (torrents == null || torrents.Length == 0)
             {
-                BotClient.SendTextMessage(message.Chat, "Нет активных торрентов");
-                return;
+                return "Нет активных торрентов";
             }
 
             var builder = new StringBuilder();
@@ -64,7 +64,7 @@ namespace iznakurnoz.Bot.CommandHandlers
                 builder.AppendLine("</code>");
             }
 
-            BotClient.SendTextMessage(message.Chat, builder.ToString());
+            return builder.ToString();
         }
 
         private static string GetIcon(ITorrentInformation torrent)
@@ -84,30 +84,30 @@ namespace iznakurnoz.Bot.CommandHandlers
                 switch (torrent.Status)
                 {
                     case TorrentStatus.DownloadWait:
-                    {
-                        icon = "\u23F3";
-                        break;
-                    }
+                        {
+                            icon = "\u23F3";
+                            break;
+                        }
 
                     case TorrentStatus.Downloading:
-                    {
-                        icon = "\u3030";
-                        break;
-                    }
+                        {
+                            icon = "\u3030";
+                            break;
+                        }
 
                     case TorrentStatus.Stopped:
-                    {
-                        icon = "\u25fc";
-                        break;
-                    }
+                        {
+                            icon = "\u25fc";
+                            break;
+                        }
 
                     default:
-                    {
-                        icon = "";
-                        break;
-                    }
+                        {
+                            icon = "";
+                            break;
+                        }
                 }
-                
+
             }
             else
             {
@@ -115,11 +115,6 @@ namespace iznakurnoz.Bot.CommandHandlers
             }
 
             return icon;
-        }
-
-        private static string GetTorrentStatus(ITorrentInformation torrent)
-        {
-            return string.Empty;
         }
     }
 }

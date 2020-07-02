@@ -52,7 +52,9 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, WifiCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, TorrentCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, TorrentListCommandHandler>();
+                    services.AddSingleton<TorrentListCommandHandler, TorrentListCommandHandler>();
 
                     services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
                 })

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Iznakurnoz.Bot.Interfaces;
 using Telegram.Bot.Types;
 
@@ -17,14 +18,12 @@ namespace iznakurnoz.Bot.CommandHandlers
             "kodi"
         };
 
-        public IEnumerable<string> SupportedCommands => _supportedCommands;
-
         public KodiCommandHandler(IBotTelegramClient botTelegramClient) 
-            : base(botTelegramClient)
+            : base(botTelegramClient, _supportedCommands)
         {
         }
 
-        public void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments)
+        public Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
             var localAll = Process.GetProcesses();
 
@@ -34,12 +33,11 @@ namespace iznakurnoz.Bot.CommandHandlers
                 {
                     // "Убивается" процесс Kodi чтобы он перезапустился заново.
                     process.Kill();
-                    BotClient.SendTextMessage(message.Chat, "Kodi перезапущен.");
-                    return;
+                    return GetAsTextResult("Kodi перезапущен.");
                 }
             }
 
-            BotClient.SendTextMessage(message.Chat, "Не найдено запущенного экземпляра Kodi.");
+            return GetAsTextResult("Не найдено запущенного экземпляра Kodi.");
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace Iznakurnoz.Bot.Interfaces
@@ -19,7 +20,7 @@ namespace Iznakurnoz.Bot.Interfaces
         /// <param name="command">Сообщение.</param>
         /// <param name="command">Команда.</param>
         /// <param name="arguments">Параметры команды.</param>
-        /// <returns>Ответное сообщение после обработки команды которое бот отправит.</returns>
-        void HandleCommand(Message message, string command, IReadOnlyCollection<string> arguments);
+        /// <returns>Ответное сообщение после обработки команды которое бот отправит. Если сообщение не нужно необходимо вернуть null в качестве текста сообщения.</returns>
+        Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments);
     }
 }

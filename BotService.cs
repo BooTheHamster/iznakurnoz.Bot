@@ -175,7 +175,7 @@ namespace Iznakurnoz.Bot
             }
         }
 
-        private void HandleCommand(Message message)
+        private async void HandleCommand(Message message)
         {
             _logger.LogInformation($"{message.Text}");
 
@@ -184,7 +184,14 @@ namespace Iznakurnoz.Bot
             {
                 try
                 {
-                    handler.HandleCommand(message, command, arguments);
+                    var resultMessage = await handler.HandleCommand(message, command, arguments);
+
+                    if (string.IsNullOrEmpty(resultMessage))
+                    {
+                        return;
+                    }
+
+                    _botClient.SendTextMessage(message.Chat, resultMessage);
                 }
                 catch (Exception error)
                 {
