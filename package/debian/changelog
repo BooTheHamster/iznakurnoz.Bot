@@ -1,3 +1,9 @@
+iznakurnozbot (0.3-1) unstable; urgency=low
+
+    * Add torrent commands.
+
+ -- Oleg Sevostyanov <oleg.sev@gmail.com>  Wed, 15 Jul 2020 16:22:42 +0400
+
 iznakurnozbot (0.2-1) unstable; urgency=low
 
     * Add Wifi commands.      
