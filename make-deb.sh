@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PACKAGE="iznakurnozbot"
-VERSION="0.1-1"
+#VERSION="0.1-1"
 
 DIST="dist"
 TARGET="$DIST/target"
@@ -29,5 +29,5 @@ cd ../..
 
 rm -vfR $TARGET
 
-dpkg --contents $DEB
-lintian $DEB
+#dpkg --contents $DEB
+#lintian $DEB
