@@ -45,22 +45,22 @@ namespace iznakurnoz.Bot.Services
                 {
                     if (string.IsNullOrWhiteSpace(config.ProxySettings.Address))
                     {
-                        validationErrors.AppendLine($"{nameof(config.ProxySettings.Address)} not defined.");
+                        validationErrors.AppendLine($"{nameof(config.ProxySettings)}.{nameof(config.ProxySettings.Address)} not defined.");
                     }
 
                     if (config.ProxySettings.Port <= 0)
                     {
-                        validationErrors.AppendLine($"{nameof(config.ProxySettings.Port)} not defined.");
+                        validationErrors.AppendLine($"{nameof(config.ProxySettings)}.{nameof(config.ProxySettings.Port)} not defined.");
                     }
 
                     if (string.IsNullOrWhiteSpace(config.ProxySettings.Username))
                     {
-                        validationErrors.AppendLine($"{nameof(config.ProxySettings.Username)} not defined.");
+                        validationErrors.AppendLine($"{nameof(config.ProxySettings)}.{nameof(config.ProxySettings.Username)} not defined.");
                     }
 
                     if (string.IsNullOrWhiteSpace(config.ProxySettings.Password))
                     {
-                        validationErrors.AppendLine($"{nameof(config.ProxySettings.Password)} not defined.");
+                        validationErrors.AppendLine($"{nameof(config.ProxySettings)}.{nameof(config.ProxySettings.Password)} not defined.");
                     }
                 }
 
@@ -73,6 +73,16 @@ namespace iznakurnoz.Bot.Services
                     if (string.IsNullOrWhiteSpace(config.TorrentServerSettings.WatchDirectoryPath))
                     {
                         validationErrors.AppendLine($"{nameof(config.TorrentServerSettings.WatchDirectoryPath)} not defined.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(config.TorrentServerSettings.Address))
+                    {
+                        validationErrors.AppendLine($"{nameof(config.TorrentServerSettings)}.{nameof(config.TorrentServerSettings.Address)} not defined.");
+                    }
+
+                    if (config.TorrentServerSettings.Port <= 0)
+                    {
+                        validationErrors.AppendLine($"{nameof(config.TorrentServerSettings)}.{nameof(config.TorrentServerSettings.Port)} not defined.");
                     }
                 }
             }
