@@ -54,7 +54,9 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<IBotCommandHandler, WifiCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, TorrentCommandHandler>();
                     services.AddSingleton<IBotCommandHandler, TorrentListCommandHandler>();
+                    services.AddSingleton<IBotCommandHandler, TorrentStartCommandHandler>();
                     services.AddSingleton<TorrentListCommandHandler, TorrentListCommandHandler>();
+                    services.AddSingleton<TorrentStartCommandHandler, TorrentStartCommandHandler>();
 
                     services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
                 })

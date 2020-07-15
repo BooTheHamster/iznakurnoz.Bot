@@ -18,6 +18,8 @@ namespace iznakurnoz.Bot.Services.TransmissionService
     /// </summary>
     internal partial class TransmissionService
     {
+        private const string OkMessage = "Ok";
+        private const string StartTorrentsErrorMessage = "Ошибка при запуске закачки торрентов";
         private const string TransmissionRpcUrl = "transmission/rpc";
         private const string HeaderXTransmissionSessionId = "X-Transmission-Session-Id";
         private readonly ILogger<TransmissionService> _logger;
@@ -46,9 +48,9 @@ namespace iznakurnoz.Bot.Services.TransmissionService
 
         public async Task<ITorrentInformation[]> GetTorrentsList()
         {
-            var parameters = new TorrentGetParameters();
             try
             {
+                var parameters = new TorrentGetParameters();
                 var result = await CallMethod<TorrentGetParameters, TorrentGetResponse>(parameters);
                 return result.Arguments.Torrents.Select(t => t as ITorrentInformation).ToArray();
             }
@@ -56,6 +58,27 @@ namespace iznakurnoz.Bot.Services.TransmissionService
             {
                 _logger.LogError(error, error.Message);
                 return new ITorrentInformation[0];
+            }
+        }
+
+        public async Task<string> StartTorrents(int[] torrentIds)
+        {
+            try
+            {
+                if (torrentIds == null || torrentIds.Length == 0)
+                {
+                    var startAllResponse = await CallMethod<TorrentStartAllParameters, TorrentEmptyResponse>(new TorrentStartAllParameters());
+                    return startAllResponse.GetOkOrResult();
+                }
+
+                var startResponse = await CallMethod<TorrentStartParameters, TorrentEmptyResponse>(new TorrentStartParameters(torrentIds));
+                return startResponse.GetOkOrResult();
+
+            }                
+            catch (Exception error)
+            {
+                _logger.LogError(error, error.Message);
+                return StartTorrentsErrorMessage;
             }
         }
 
