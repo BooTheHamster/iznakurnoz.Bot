@@ -11,7 +11,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace iznakurnoz.Bot.Services
-{    
+{
     /// <summary>
     /// Клиент для работы с телеграм-ботом.
     /// </summary>
@@ -53,7 +53,7 @@ namespace iznakurnoz.Bot.Services
             }
             catch (Exception error)
             {
-                _logger.LogError(error, "GetFile error");                
+                _logger.LogError(error, "GetFile error");
             }
 
             return null;
@@ -82,13 +82,20 @@ namespace iznakurnoz.Bot.Services
                 Stop();
 
                 _config = config;
-                var proxy = new HttpToSocks5Proxy(
-                    _config.ProxySettings.Address,
-                    _config.ProxySettings.Port,
-                    _config.ProxySettings.Username,
-                    _config.ProxySettings.Password);
-                _client = new TelegramBotClient(_config.AuthToken, proxy);
 
+                if (_config.ProxySettings.UseProxy)
+                {
+                    var proxy = new HttpToSocks5Proxy(
+                        _config.ProxySettings.Address,
+                        _config.ProxySettings.Port,
+                        _config.ProxySettings.Username,
+                        _config.ProxySettings.Password);
+                    _client = new TelegramBotClient(_config.AuthToken, proxy);
+                }
+                else
+                {
+                    _client = new TelegramBotClient(_config.AuthToken);
+                }
             }
             catch (Exception error)
             {
@@ -99,7 +106,7 @@ namespace iznakurnoz.Bot.Services
             _client.OnMessage += BotOnMessageReceived;
             _client.OnMessageEdited += BotOnMessageReceived;
             _client.StartReceiving();
-            
+
             return true;
         }
 

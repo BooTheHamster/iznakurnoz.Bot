@@ -24,5 +24,10 @@ namespace Iznakurnoz.Bot.Configuration
         /// Пароль пользователя прокси.
         /// </summary>
         public string Password { get; set; }
+
+        /// <summary>
+        /// Признак использования прокси для подключения к API.
+        /// </summary>
+        public bool UseProxy { get; set; }
     }
 }
