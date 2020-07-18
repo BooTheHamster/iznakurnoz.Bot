@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using iznakurnoz.Bot.Services.TransmissionService;
 using Iznakurnoz.Bot.Interfaces;
@@ -32,7 +33,17 @@ namespace iznakurnoz.Bot.CommandHandlers
 
         public Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
-            return _transmissionService.StartTorrents(new int[] { 1 });
+            var torrentIds = new List<int>();
+
+            foreach (var argument in arguments)
+            {
+                if (int.TryParse(argument, out var id))
+                {
+                    torrentIds.Add(id);
+                }
+            }
+
+            return _transmissionService.StartTorrents(torrentIds.ToArray());
         }
     }
 }
