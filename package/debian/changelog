@@ -1,3 +1,9 @@
+iznakurnozbot (0.5-1) unstable; urgency=low
+
+    * Add torrent start command.
+
+ -- Oleg Sevostyanov <oleg.sev@gmail.com>  Sat, 18 Jul 2020 10:17:00 +0400
+
 iznakurnozbot (0.4-1) unstable; urgency=low
 
     * Add proxy disable settings.
