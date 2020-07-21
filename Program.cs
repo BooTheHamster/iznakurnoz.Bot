@@ -49,14 +49,21 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton<RouterRequestService>();
                     services.AddSingleton<TransmissionService>();
 
-                    services.AddSingleton<IBotCommandHandler, HiCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, KodiCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, WifiCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, TorrentCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, TorrentListCommandHandler>();
-                    services.AddSingleton<IBotCommandHandler, TorrentStartCommandHandler>();
-                    services.AddSingleton<TorrentListCommandHandler, TorrentListCommandHandler>();
-                    services.AddSingleton<TorrentStartCommandHandler, TorrentStartCommandHandler>();
+                    var types = Assembly.GetExecutingAssembly()
+                        .GetTypes()
+                        .ToArray();
+
+                    // Поиск и регистрация обработчиков команд.
+                    foreach (var type in types)
+                    {
+                        if (!typeof(IBotCommandHandler).IsAssignableFrom(type) || !type.IsClass)
+                        {
+                            continue;
+                        }
+
+                        services.AddSingleton(typeof(IBotCommandHandler), type);
+                        services.AddSingleton(type, type);
+                    }
 
                     services.AddSingleton<IBotDocumentHandler, TorrentDocumentHandler>();
                 })
