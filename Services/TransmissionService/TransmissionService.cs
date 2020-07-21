@@ -67,12 +67,29 @@ namespace iznakurnoz.Bot.Services.TransmissionService
             {
                 if (torrentIds == null || torrentIds.Length == 0)
                 {
-                    var startAllResponse = await CallMethod<TorrentStartAllParameters, TorrentEmptyResponse>(new TorrentStartAllParameters());
-                    return startAllResponse.GetOkOrResult();
+                    return (await CallMethod<TorrentStartAllParameters, TorrentEmptyResponse>(new TorrentStartAllParameters())).GetOkOrResult();
                 }
 
-                var startResponse = await CallMethod<TorrentStartParameters, TorrentEmptyResponse>(new TorrentStartParameters(torrentIds));
-                return startResponse.GetOkOrResult();
+                return (await CallMethod<TorrentStartParameters, TorrentEmptyResponse>(new TorrentStartParameters(torrentIds))).GetOkOrResult();
+
+            }                
+            catch (Exception error)
+            {
+                _logger.LogError(error, error.Message);
+                return StartTorrentsErrorMessage;
+            }
+        }
+
+        public async Task<string> StopTorrents(int[] torrentIds)
+        {
+            try
+            {
+                if (torrentIds == null || torrentIds.Length == 0)
+                {
+                    return (await CallMethod<TorrentStopAllParameters, TorrentEmptyResponse>(new TorrentStopAllParameters())).GetOkOrResult();
+                }
+
+                return (await CallMethod<TorrentStopParameters, TorrentEmptyResponse>(new TorrentStopParameters(torrentIds))).GetOkOrResult();
 
             }                
             catch (Exception error)

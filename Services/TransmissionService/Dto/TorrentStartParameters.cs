@@ -21,5 +21,4 @@ namespace iznakurnoz.Bot.Services.TransmissionService.Dto
         {
         }
     }
-
 }

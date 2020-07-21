@@ -8,19 +8,19 @@ using Telegram.Bot.Types;
 namespace iznakurnoz.Bot.CommandHandlers
 {
     /// <summary>
-    /// Обработчик команды запуска закачки торрентов.
+    /// Обработчик команды остановки закачки торрентов.
     /// </summary>
-    internal class TorrentStartCommandHandler : BaseCommandHandler, IBotCommandHandler
+    internal class TorrentStopCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
         private static IEnumerable<string> _supportedCommands = new[]
         {
-            "ts",
+            "tstop",
 
         };
         private readonly TransmissionService _transmissionService;
         private readonly ILogger<TorrentListCommandHandler> _logger;
 
-        public TorrentStartCommandHandler(
+        public TorrentStopCommandHandler(
             IBotTelegramClient botTelegramClient,
             TransmissionService transmissionService,
             ILogger<TorrentListCommandHandler> logger)
@@ -42,7 +42,7 @@ namespace iznakurnoz.Bot.CommandHandlers
                 }
             }
 
-            return _transmissionService.StartTorrents(torrentIds.ToArray());
+            return _transmissionService.StopTorrents(torrentIds.ToArray());
         }
     }
 }
