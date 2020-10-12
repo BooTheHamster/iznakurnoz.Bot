@@ -6,7 +6,7 @@ using iznakurnoz.Bot.Extensions;
 
 namespace iznakurnoz.Bot.Services.RouterService
 {
-    internal partial class RouterRequestService
+    internal partial class AsusRouterRequestService
     {
         /// <summary>
         /// Параметры WiFi фильтра в роутере.

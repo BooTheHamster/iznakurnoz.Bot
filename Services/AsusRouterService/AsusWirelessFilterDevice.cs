@@ -1,6 +1,6 @@
 namespace iznakurnoz.Bot.Services.RouterService
 {
-    internal partial class RouterRequestService
+    internal partial class AsusRouterRequestService
     {
         /// <summary>
         /// Описание устройства для WiFi фильтра.

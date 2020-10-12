@@ -16,7 +16,7 @@ namespace iznakurnoz.Bot.Services.RouterService
     /// <summary>
     /// Сервис для запросов к роутеру.
     /// </summary>
-    internal partial class RouterRequestService
+    internal partial class AsusRouterRequestService
     {
         private const string NoDevice = "Нет устройства с подходящими параметрами.";
         private const string InvalidParameters = "Неверные параметры";
@@ -34,10 +34,10 @@ namespace iznakurnoz.Bot.Services.RouterService
         private const string ShellCgi = "shell.cgi";
         private readonly IConfigProvider _configProvider;
         private readonly HttpClient _client;
-        private readonly ILogger<RouterRequestService> _logger;
+        private readonly ILogger<AsusRouterRequestService> _logger;
 
-        public RouterRequestService(
-            ILogger<RouterRequestService> logger,
+        public AsusRouterRequestService(
+            ILogger<AsusRouterRequestService> logger,
             IConfigProvider configProvider)
         {
             _logger = logger;

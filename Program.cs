@@ -46,7 +46,7 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton(commandLineProvider);
                     services.AddSingleton(filePathProvider);
 
-                    services.AddSingleton<RouterRequestService>();
+                    //services.AddSingleton<AsusRouterRequestService>();
                     services.AddSingleton<TransmissionService>();
 
                     var types = Assembly.GetExecutingAssembly()
