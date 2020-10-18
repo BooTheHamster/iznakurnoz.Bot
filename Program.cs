@@ -6,6 +6,7 @@ using iznakurnoz.Bot.CommandHandlers;
 using iznakurnoz.Bot.DocumentHandlers;
 using iznakurnoz.Bot.Interfaces;
 using iznakurnoz.Bot.Services;
+using iznakurnoz.Bot.Services.KeeneticRouterService;
 using iznakurnoz.Bot.Services.RouterService;
 using iznakurnoz.Bot.Services.TransmissionService;
 using Iznakurnoz.Bot.Configuration;
@@ -47,6 +48,7 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton(filePathProvider);
 
                     //services.AddSingleton<AsusRouterRequestService>();
+                    services.AddSingleton<KeeneticRouterRequestService>();
                     services.AddSingleton<TransmissionService>();
 
                     var types = Assembly.GetExecutingAssembly()
