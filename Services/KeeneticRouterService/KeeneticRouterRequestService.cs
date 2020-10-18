@@ -14,6 +14,13 @@ namespace iznakurnoz.Bot.Services.KeeneticRouterService
     /// </summary>
     internal class KeeneticRouterRequestService
     {
+        /// <summary>
+        /// Url сервиса авторизации роутера.
+        /// </summary>
+        private const string AuthPageUri = "auth";
+
+        private const string OkMessage = "Ok";
+
         private readonly IConfigProvider _configProvider;
         private readonly HttpClient _client;
         private readonly ILogger<KeeneticRouterRequestService> _logger;
@@ -29,19 +36,20 @@ namespace iznakurnoz.Bot.Services.KeeneticRouterService
         
         async public Task<string> GetWirelessStatus()
         {
-        }
+            var loginResult = await Login();
 
-        async private Task<string> Login()
-        {
-            var page = await Request(StatusPageUri);
-            var match = _httpIdRegex.Match(page);
-
-            if (match.Success)
+            if (loginResult)
             {
-                return match.Groups[1].Value;
+                return OkMessage;
             }
 
-            return null;
+            return string.Empty;
+        }
+
+        async private Task<bool> Login()
+        {
+            var page = await Request(AuthPageUri);
+            return false;
         }
 
         async private Task<string> Request(
