@@ -1,3 +1,5 @@
+![.NET Core](https://github.com/BooTheHamster/iznakurnoz.Bot/workflows/.NET%20Core/badge.svg)
+
 # iznakurnoz.Bot
 Бот для telegram для домашнего сервера на .Net Core.
 
