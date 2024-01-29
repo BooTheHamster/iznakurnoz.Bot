@@ -29,4 +29,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources/iznakurnozbot.conf"/>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
 </Project>

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Iznakurnoz.Bot.Interfaces;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
@@ -12,12 +11,11 @@ namespace iznakurnoz.Bot.CommandHandlers
     /// </summary>
     internal class TorrentCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
-        private static IEnumerable<string> _supportedCommands = new[]
+        private static readonly IEnumerable<string> LocalSupportedCommands = new[]
         {
             "torrent"
         };
         private readonly TorrentListCommandHandler _torrentListCommandHandler;
-        private readonly ILogger<TorrentCommandHandler> _logger;
         
         /// <summary>
         /// Карта соответствия настроек и методов-обработчиков настроек.
@@ -25,13 +23,10 @@ namespace iznakurnoz.Bot.CommandHandlers
         private readonly IDictionary<string, OptionHandlerDelegate> _optionHandlers;
 
         public TorrentCommandHandler(
-            IBotTelegramClient botTelegramClient,
-            TorrentListCommandHandler torrentListCommandHandler,
-            ILogger<TorrentCommandHandler> logger)
-            : base(botTelegramClient, _supportedCommands)
+            TorrentListCommandHandler torrentListCommandHandler)
+            : base(LocalSupportedCommands)
         {
             _torrentListCommandHandler = torrentListCommandHandler;
-            _logger = logger;
             _optionHandlers = new Dictionary<string, OptionHandlerDelegate>()
             {
                 { "l", TorrentListOptionHandler },
@@ -43,17 +38,14 @@ namespace iznakurnoz.Bot.CommandHandlers
         {
             var argumentEnumerator = arguments.GetEnumerator();
 
-            if (!argumentEnumerator.MoveNext())
+            if (!argumentEnumerator.MoveNext() || argumentEnumerator.Current == null)
             {
                 return GetCommandAgrumentError();
             }
 
-            if (_optionHandlers.TryGetValue(argumentEnumerator.Current, out var handler))
-            {
-                return handler(message, argumentEnumerator);
-            }
-
-            return GetSilentResult();
+            return _optionHandlers.TryGetValue(argumentEnumerator.Current, out var handler)
+                ? handler(message, argumentEnumerator)
+                : GetSilentResult();
         }
 
         private Task<string> TorrentListOptionHandler(Message message, IEnumerator<string> arguments)

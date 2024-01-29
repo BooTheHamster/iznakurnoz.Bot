@@ -10,19 +10,19 @@ namespace iznakurnoz.Bot.CommandHandlers
     /// </summary>
     internal class HiCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
-        private static IEnumerable<string> _supportedCommands = new[]
+        private static readonly IEnumerable<string> LocalSupportedCommands = new[]
         {
             "hi"
         };
 
-        public HiCommandHandler(IBotTelegramClient botTelegramClient) 
-            : base(botTelegramClient, _supportedCommands)
+        public HiCommandHandler() 
+            : base(LocalSupportedCommands)
         {
         }
 
         public Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)
         {
-            return GetAsTextResult($"<code>hi {message.From.FirstName}! C#</code>");
+            return GetAsTextResult($"<code>hi {message.From.FirstName}! C# Net 8</code>");
         }
     }
 }

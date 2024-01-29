@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Iznakurnoz.Bot.Interfaces;
 using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
@@ -10,33 +9,26 @@ namespace iznakurnoz.Bot.CommandHandlers
     /// </summary>
     internal abstract class BaseCommandHandler
     {
-        public delegate Task<string> OptionHandlerDelegate(Message message, IEnumerator<string> arguments);
+        protected delegate Task<string> OptionHandlerDelegate(Message message, IEnumerator<string> arguments);
 
-        private IEnumerable<string> _supportedCommands;
+        public IEnumerable<string> SupportedCommands { get; }
 
-        protected IBotTelegramClient BotClient { get; }
-
-        public IEnumerable<string> SupportedCommands => _supportedCommands;
-
-        protected BaseCommandHandler(
-            IBotTelegramClient botTelegramClient,
-            IEnumerable<string> supportedCommands)
+        protected BaseCommandHandler(IEnumerable<string> supportedCommands)
         {
-            BotClient = botTelegramClient;
-            _supportedCommands = supportedCommands;
+            SupportedCommands = supportedCommands;
         }
 
-        protected Task<string> GetSilentResult()
+        protected static Task<string> GetSilentResult()
         {
             return Task.FromResult<string>(null);
         }
 
-        protected Task<string> GetAsTextResult(string message)
+        protected static Task<string> GetAsTextResult(string message)
         {
             return Task.FromResult(message);
         }
 
-        protected Task<string> GetCommandAgrumentError()
+        protected static Task<string> GetCommandAgrumentError()
         {
             return GetAsTextResult("Не заданы обязательные параметры команды");
         }

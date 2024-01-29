@@ -16,10 +16,14 @@ namespace iznakurnoz.Bot.Services
         /// </summary>
         private const string DataStorageFilename = "datastorage.json";
 
-        private IDictionary<string, object> _storage = null;
-        private IDictionary<string, string> _readedStorage = null;
-        private string _dataFilePath = null;
+        private Dictionary<string, object> _storage;
+        private Dictionary<string, string> _readedStorage;
+        private string _dataFilePath;
         private readonly FilePathProvider _filePathProvider;
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        };
 
         public DataStorage(FilePathProvider filePathProvider)
         {
@@ -53,11 +57,7 @@ namespace iznakurnoz.Bot.Services
             _storage[key] = obj;
 
             var filePath = GetFilePath();
-            var options = new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            };
-            var storageContent = JsonSerializer.Serialize(_storage, options);
+            var storageContent = JsonSerializer.Serialize(_storage, SerializerOptions);
             File.WriteAllText(filePath, storageContent);
         }
 

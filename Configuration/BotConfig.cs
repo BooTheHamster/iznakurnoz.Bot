@@ -24,10 +24,5 @@ namespace Iznakurnoz.Bot.Configuration
         /// Настройки прокси.
         /// </summary>
         public ProxySettings ProxySettings { get; set; }
-
-        /// <summary>
-        /// Настройки роутера.
-        /// </summary>
-        public RouterSettings RouterSettings { get; set; }
     }
 }

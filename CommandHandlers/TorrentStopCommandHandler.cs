@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using iznakurnoz.Bot.Services.TransmissionService;
 using Iznakurnoz.Bot.Interfaces;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
@@ -10,24 +10,20 @@ namespace iznakurnoz.Bot.CommandHandlers
     /// <summary>
     /// Обработчик команды остановки закачки торрентов.
     /// </summary>
+    [SuppressMessage("ReSharper", "UnusedType.Global")]
     internal class TorrentStopCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
-        private static IEnumerable<string> _supportedCommands = new[]
+        private static readonly IEnumerable<string> LocalSupportedCommands = new[]
         {
             "tstop",
 
         };
         private readonly TransmissionService _transmissionService;
-        private readonly ILogger<TorrentListCommandHandler> _logger;
 
-        public TorrentStopCommandHandler(
-            IBotTelegramClient botTelegramClient,
-            TransmissionService transmissionService,
-            ILogger<TorrentListCommandHandler> logger)
-            : base(botTelegramClient, _supportedCommands)
+        public TorrentStopCommandHandler(TransmissionService transmissionService)
+            : base(LocalSupportedCommands)
         {
             _transmissionService = transmissionService;
-            _logger = logger;
         }
 
         public Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -6,8 +7,6 @@ using iznakurnoz.Bot.CommandHandlers;
 using iznakurnoz.Bot.DocumentHandlers;
 using iznakurnoz.Bot.Interfaces;
 using iznakurnoz.Bot.Services;
-using iznakurnoz.Bot.Services.KeeneticRouterService;
-using iznakurnoz.Bot.Services.RouterService;
 using iznakurnoz.Bot.Services.TransmissionService;
 using Iznakurnoz.Bot.Configuration;
 using Iznakurnoz.Bot.Interfaces;
@@ -18,7 +17,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Iznakurnoz.Bot
 {
-
     class Program
     {
         private const string AppSettingsFilename = "iznakurnozbot.conf";
@@ -47,8 +45,6 @@ namespace Iznakurnoz.Bot
                     services.AddSingleton(commandLineProvider);
                     services.AddSingleton(filePathProvider);
 
-                    //services.AddSingleton<AsusRouterRequestService>();
-                    services.AddSingleton<KeeneticRouterRequestService>();
                     services.AddSingleton<TransmissionService>();
 
                     var types = Assembly.GetExecutingAssembly()
@@ -86,6 +82,11 @@ namespace Iznakurnoz.Bot
         {
             var configDirectoryPath = filePathProvider.GetConfigDirectoryPath();
 
+            if (string.IsNullOrWhiteSpace(configDirectoryPath))
+            {
+                throw new Exception(nameof(configDirectoryPath));
+            }
+            
             if (!Directory.Exists(configDirectoryPath))
             {
                 Directory.CreateDirectory(configDirectoryPath);
@@ -96,16 +97,21 @@ namespace Iznakurnoz.Bot
             if (!File.Exists(configFilePath))
             {
                 var assembly = Assembly.GetEntryAssembly();
-                using (var resource = assembly.GetManifestResourceStream("iznakurnoz.Bot.Resources.iznakurnozbot.conf"))
-                {
-                    using (var textStream = new FileStream(configFilePath, FileMode.Create))
+                
+                if (assembly != null)
+                    using (var resource = assembly.GetManifestResourceStream("iznakurnoz.Bot.Resources.iznakurnozbot.conf"))
                     {
-                        resource.Seek(0, SeekOrigin.Begin);
-                        resource.CopyTo(textStream);
-                        textStream.Flush();
-                        textStream.Close();
+                        if (resource != null)
+                        {
+                            using (var textStream = new FileStream(configFilePath, FileMode.Create))
+                            {
+                                resource.Seek(0, SeekOrigin.Begin);
+                                resource.CopyTo(textStream);
+                                textStream.Flush();
+                                textStream.Close();
+                            }
+                        }
                     }
-                }
             }
 
             builder

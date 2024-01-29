@@ -22,7 +22,7 @@ namespace Iznakurnoz.Bot
         private readonly IBotTelegramClient _botClient;
         private readonly CommandLineProvider _commandLineProvider;
         private BotConfig _config;
-        private IDictionary<string, IBotCommandHandler> _botCommandHandlers = new Dictionary<string, IBotCommandHandler>();
+        private readonly IDictionary<string, IBotCommandHandler> _botCommandHandlers = new Dictionary<string, IBotCommandHandler>();
         private readonly IEnumerable<IBotDocumentHandler> _botDocumentHandlers;
 
         public BotService(
@@ -78,7 +78,7 @@ namespace Iznakurnoz.Bot
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting bot.");
+            _logger.LogInformation("Starting bot");
 
             if (!ConfigurationChecker.CheckConfig(_config, _logger))
             {
@@ -91,7 +91,7 @@ namespace Iznakurnoz.Bot
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Stopping bot.");
+            _logger.LogInformation("Stopping bot");
             StopClient();
 
             return Task.CompletedTask;
@@ -123,7 +123,7 @@ namespace Iznakurnoz.Bot
                                 Text = _commandLineProvider.TestCommand
                             };
 
-                            _logger.LogInformation($"Handle test command: {testMessage.Text}");
+                            _logger.LogInformation("Handle test command: {TestMessageText}", testMessage.Text);
                             HandleCommand(testMessage);
                         });
                 }
@@ -134,7 +134,7 @@ namespace Iznakurnoz.Bot
             return GetStartTask(StartWaitDelayInMilliseconds);
         }
 
-        private Task GetStartTask(int delay)
+        private Task<Task> GetStartTask(int delay)
         {
             return Task.Delay(delay).ContinueWith(task => TryStartBot());
         }
@@ -157,7 +157,7 @@ namespace Iznakurnoz.Bot
 
         private void HandleDocument(Message message)
         {
-            _logger.LogInformation($"{message.Document.FileName}");
+            _logger.LogInformation("{DocumentFileName}", message.Document.FileName);
 
             foreach (var documentHandler in _botDocumentHandlers)
             {
@@ -170,37 +170,39 @@ namespace Iznakurnoz.Bot
                 }
                 catch (Exception error)
                 {
-                    _logger.LogError(error, $"Document handler ${documentHandler.GetType().Name} error");
+                    _logger.LogError(error, "Document handler ${Name} error", documentHandler.GetType().Name);
                 }
             }
         }
 
         private async void HandleCommand(Message message)
         {
-            _logger.LogInformation($"{message.Text}");
+            _logger.LogInformation("{MessageText}", message.Text);
 
-            if (ParseCommand(message.Text, out var command, out var arguments)
-                && _botCommandHandlers.TryGetValue(command, out var handler))
+            if (!ParseCommand(message.Text, out var command, out var arguments)
+                || !_botCommandHandlers.TryGetValue(command, out var handler))
             {
-                try
-                {
-                    var resultMessage = await handler.HandleCommand(message, command, arguments);
+                return;
+            }
+            
+            try
+            {
+                var resultMessage = await handler.HandleCommand(message, command, arguments);
 
-                    if (string.IsNullOrEmpty(resultMessage))
-                    {
-                        return;
-                    }
-
-                    _botClient.SendTextMessage(message.Chat, resultMessage);
-                }
-                catch (Exception error)
+                if (string.IsNullOrEmpty(resultMessage))
                 {
-                    _logger.LogError(error, $"Command {message.Text} execution error");
+                    return;
                 }
+
+                _botClient.SendTextMessage(message.Chat, resultMessage);
+            }
+            catch (Exception error)
+            {
+                _logger.LogError(error, "Command {MessageText} execution error", message.Text);
             }
         }
 
-        private bool ParseCommand(string message, out string command, out IReadOnlyCollection<string> arguments)
+        private static bool ParseCommand(string message, out string command, out IReadOnlyCollection<string> arguments)
         {
             command = null;
             arguments = null;
@@ -232,7 +234,7 @@ namespace Iznakurnoz.Bot
             return true;
         }
 
-        private bool IsCommand(string text)
+        private static bool IsCommand(string text)
         {
             return text.StartsWith(CommandPrefix);
         }

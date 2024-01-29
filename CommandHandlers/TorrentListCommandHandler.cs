@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using iznakurnoz.Bot.Services.TransmissionService;
 using iznakurnoz.Bot.Services.TransmissionService.Interfaces;
 using Iznakurnoz.Bot.Interfaces;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
 namespace iznakurnoz.Bot.CommandHandlers
@@ -15,22 +14,17 @@ namespace iznakurnoz.Bot.CommandHandlers
     /// </summary>
     internal class TorrentListCommandHandler : BaseCommandHandler, IBotCommandHandler
     {
-        private static IEnumerable<string> _supportedCommands = new[]
+        private static readonly IEnumerable<string> LocalSupportedCommands = new[]
         {
             "tl",
 
         };
         private readonly TransmissionService _transmissionService;
-        private readonly ILogger<TorrentListCommandHandler> _logger;
 
-        public TorrentListCommandHandler(
-            IBotTelegramClient botTelegramClient,
-            TransmissionService transmissionService,
-            ILogger<TorrentListCommandHandler> logger)
-            : base(botTelegramClient, _supportedCommands)
+        public TorrentListCommandHandler(TransmissionService transmissionService)
+            : base(LocalSupportedCommands)
         {
             _transmissionService = transmissionService;
-            _logger = logger;
         }
 
         public async Task<string> HandleCommand(Message message, string command, IEnumerable<string> arguments)

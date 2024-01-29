@@ -32,7 +32,7 @@ namespace iznakurnoz.Bot.DocumentHandlers
             return true;
         }
 
-        async private void DownloadAndCopyTorrentFile(Message message)
+        private async void DownloadAndCopyTorrentFile(Message message)
         {
             // Загрузка файла из телеграма.
             var fileStream = await _botClient.GetFile(message.Document.FileId);
@@ -67,7 +67,7 @@ namespace iznakurnoz.Bot.DocumentHandlers
                 $"Торрент <code>{message.Document.FileName}</code> добавлен.");
         }
 
-        private bool IsDocumentSupported(Document document)
+        private static bool IsDocumentSupported(Document document)
         {
             if (!document.FileName.EndsWith(".torrent"))
             {
