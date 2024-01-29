@@ -20,7 +20,7 @@ chmod -R 755 $TARGET
 
 cp -R package/debian/** $DEBIAN
 cp Resources/iznakurnozbot.conf $ETC
-cp bin/Debug/net8.0/linux-x64/publish/** $OPT
+cp bin/Debug/net8.0/publish/** $OPT
 cp package/iznakurnozbot.service $DEBIAN
 
 cd $TARGET
