@@ -1,3 +1,9 @@
+iznakurnozbot (0.6-1) unstable; urgency=low
+
+    * Net 7 Support.
+
+ -- Oleg Sevostyanov <oleg.sev@gmail.com>  Mon, 01 Jan 2024 20:57:00 +0400
+
 iznakurnozbot (0.5-1) unstable; urgency=low
 
     * Add torrent start command.
