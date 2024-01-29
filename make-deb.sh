@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PACKAGE="iznakurnozbot"
-#VERSION="0.1-1"
+VERSION="0.6-1"
 
 DIST="dist"
 TARGET="$DIST/target"
@@ -20,7 +20,7 @@ chmod -R 755 $TARGET
 
 cp -R package/debian/** $DEBIAN
 cp Resources/iznakurnozbot.conf $ETC
-cp bin/Debug/netcoreapp3.1/linux-x64/publish/** $OPT
+cp bin/Debug/net8.0/linux-x64/publish/** $OPT
 cp package/iznakurnozbot.service $DEBIAN
 
 cd $TARGET
